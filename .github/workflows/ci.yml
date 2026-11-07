@@ -51,3 +51,36 @@ jobs:
       # its own is not a gate; it is a red light nobody reads.
       - name: every recipe can be read
         run: go run github.com/go-zpkg/zbk/cmd/zbk@main lint --dir .
+
+      # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
+      # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
+      # all 183 entries to the keys they CHANGE, and that was right: bottle
+      # merges this tree OVER PantryBase, so an omitted key is inherited and a
+      # small curated tree can correct a stale constraint without forking 1700
+      # files.
+      #
+      # It is exactly wrong for a pantry. `PantryBase` is still
+      # `pkgxdev/pantry` compiled in (bottle/pkgx.go:68), so a fragment
+      # resolves only because somebody else's recipe sits underneath it — the
+      # recipe we may not copy, which is why ours are written rather than
+      # converted (go-zpkg/packages#431).
+      #
+      # 197 of 214 are fragments today, so this cannot be a hard zero: that
+      # would fail every pull request on recipes nobody has written yet, which
+      # is the exact shape of the defect the step above carries in its own
+      # comment. The number is therefore STATED, and --max-fragments refuses an
+      # increase AND refuses a stale ceiling — a ceiling nobody lowers stops
+      # describing the tree, and a regression then hides in the slack.
+      #
+      # ⛔ SO COMPLETING A RECIPE MEANS EDITING THIS NUMBER, and that is the
+      # point: the lane goes red until it is lowered, which is the one moment
+      # anybody is looking.
+      #
+      # --require-provenance is NOT here yet. 15 of 214 record none, and there
+      # is no ratchet for it, so turning it on would be the red light this
+      # avoids. It belongs here once those 15 are written or once it has a
+      # ceiling of its own.
+      - name: no recipe becomes a fragment that was not one already
+        run: >
+          go run github.com/go-zpkg/zbk/cmd/zbk@main lint --dir .
+          --require-standalone --max-fragments 197
