@@ -1,8 +1,16 @@
 # pantry-overlay
 
-A tiny **overlay** for the pkgx pantry, consumed by `go-pkgx/bottle` via
-`PKGX_PANTRY_OVERLAY`. Each recipe here overrides the matching upstream
-`pkgxdev/pantry` recipe (everything else falls back upstream).
+The recipes we own, consumed by
+[`go-zpkg/bottle`](https://github.com/go-zpkg/bottle) via
+`ZPKG_PANTRY_OVERLAY`. A recipe here wins over any same-named recipe in the
+pantry the factory is reading; what is absent here still falls back to that
+pantry, which is why this is called an overlay.
+
+⛔ That fallback is the half that is going away: we are no longer compatible
+with pkgx and the sovereign pantry is being written
+([packages#420](https://github.com/go-zpkg/packages/issues/420),
+[#431](https://github.com/go-zpkg/packages/issues/431)). These 213 recipes are
+the part that is already ours.
 
 Two purposes.
 
