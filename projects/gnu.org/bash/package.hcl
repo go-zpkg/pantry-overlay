@@ -46,7 +46,19 @@ distributable {
     "5.3" = "0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba"
   }
 
-  sha = "https://ftp.gnu.org/gnu/bash/bash-{{version.raw}}.tar.gz.sig"
+  # ⛔⛔ THE SIGNATURE URL WAS WRITTEN HERE AS `sha`, AND `sha` MEANS SOMETHING
+  # ELSE: "where the expected SHA-256 of the archive is published … the build
+  # FETCHES it and refuses a mismatch" (schema/package.schema.json:141,
+  # build/runner.go:769-781). Measured with the builder's own reader,
+  # fetch.DeclaredSHA256 on a `.sig` returns "no line names <archive> — the
+  # server returned text, not an archive: \"-----BEGIN PGP SIGNATURE----- …\"",
+  # and an unreadable checksum file is a build failure by design
+  # (runner.go:746-749). `zbk lint` cannot see it, because linting does not
+  # fetch.
+  #
+  # No schema field exists for a detached signature (go-zpkg/zbk#282), so it is
+  # recorded in `provenance` below until there is one:
+  #   https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz.sig
 }
 
 build {
