@@ -11,22 +11,22 @@ dependencies = {
   #   cc: error: unable to execute command: No such file or directory
   #
   # Builds never met it: a build's environment drags libxml2 in through the
-  # base toolchain. `bk factory --test-only` gives a package only itself and
+  # base toolchain. `zbk factory --test-only` gives a package only itself and
   # its test.dependencies, and that lean environment is the first llvm's
   # linker ever ran in — reported by github.com/westes/flex, which has
   # nothing to do with libxml2.
   #
   # In BOTH halves, for the reason the build.dependencies comment below
-  # already gives: go-pkgx/packages carries the same edit as an override for
-  # the recipe bk builds, and this is the half a CONSUMER resolves from — the
-  # one `pkgx +llvm.org` reads when it assembles a test environment.
+  # already gives: go-zpkg/packages carries the same edit as an override for
+  # the recipe zbk builds, and this is the half a CONSUMER resolves from — the
+  # one `zpkgx +llvm.org` reads when it assembles a test environment.
   #
   # Scoped: a bottle links the soname that was in the store when it was
   # built, so tightening this for an arch whose bottle links .so.2 would
   # break it instead. Measured that the platform key wins and the others keep
   # "^2".
   #
-  # The soname moved INSIDE a major, which is go-pkgx/packages#233's class.
+  # The soname moved INSIDE a major, which is go-zpkg/packages#233's class.
   "linux/s390x" = {
     "gnome.org/libxml2" = "^2.15"
   }
@@ -43,9 +43,9 @@ build {
     # llvm.org. That cycle has no entry point, and on an architecture with no
     # bottles yet it is where a seed stops.
     #
-    # It has to be scoped in BOTH halves. go-pkgx/packages carries the same
-    # change as an override for the recipe bk builds; this is the half a
-    # consumer resolves from, and since go-pkgx/bk#224 the factory's closure
+    # It has to be scoped in BOTH halves. go-zpkg/packages carries the same
+    # change as an override for the recipe zbk builds; this is the half a
+    # consumer resolves from, and since go-zpkg/zbk#224 the factory's closure
     # takes the UNION of the two — so leaving it unscoped here keeps the cycle
     # alive whichever way the other half is written. Measured: the pantry-only
     # closure for linux/s390x names neither rust nor semverator, and adding
@@ -179,9 +179,15 @@ EOT
     "test -f \"{{prefix}}/lib/cmake/llvm/LLVMConfig.cmake\"",
   ]
 
+  # ⛔ `$PKGX_DIR` HERE EXPANDED TO NOTHING. The store variable is `ZPKG_DIR`
+  # since the rename and nothing in zbk or bottle sets the old spelling
+  # (build/build.go:749, cmd/zbk/builder.go:626, bottle/pkgx.go:381), so what
+  # reached the linker was the empty `-Wl,-rpath,`. What that then did to the
+  # test binary is NOT asserted here — it was not measured; what is measured is
+  # that the flag named a variable nobody defines.
   env {
     ARGS = [
-      "-Wl,-rpath,$PKGX_DIR",
+      "-Wl,-rpath,$ZPKG_DIR",
     ]
   }
 }

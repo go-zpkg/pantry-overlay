@@ -21,7 +21,7 @@ unsatisfiable against the current registry.
 
 BSD-3-Clause, © the go-pkgx authors.
 
-**2. Carry recipes that exist only here.** A recipe the go-pkgx factory adds
+**2. Carry recipes that exist only here.** A recipe the go-zpkg factory adds
 through `packages/overrides/` (a creation patch) reaches the BUILD and nothing
 else: `overrides/` is applied to the pantry checkout the factory builds from,
 while a consumer resolving a closure reads the pantry over HTTP and gets a 404.
