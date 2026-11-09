@@ -65,7 +65,7 @@ jobs:
       # recipe we may not copy, which is why ours are written rather than
       # converted (go-zpkg/packages#431).
       #
-      # 197 of 214 are fragments today, so this cannot be a hard zero: that
+      # 196 of 216 are fragments today, so this cannot be a hard zero: that
       # would fail every pull request on recipes nobody has written yet, which
       # is the exact shape of the defect the step above carries in its own
       # comment. The number is therefore STATED, and --max-fragments refuses an
@@ -76,11 +76,19 @@ jobs:
       # point: the lane goes red until it is lowered, which is the one moment
       # anybody is looking.
       #
-      # --require-provenance is NOT here yet. 15 of 214 record none, and there
+      # ⭐ 197 → 196 with gnu.org/grep is the FIRST time this number has moved
+      # since #80 set it. Checked rather than assumed: `git log -S max-fragments`
+      # names one commit, the one that introduced it. zlib.net, tukaani.org/xz
+      # and lz4.org ADDED standalone recipes — the total went 213 → 216 and the
+      # fragment count did not change — and gnu.org/gzip already stood alone, so
+      # that work gave it a basis rather than a status. grep is the first recipe
+      # to stop being a fragment.
+      #
+      # --require-provenance is NOT here yet. 14 of 216 record none, and there
       # is no ratchet for it, so turning it on would be the red light this
-      # avoids. It belongs here once those 15 are written or once it has a
+      # avoids. It belongs here once those 14 are written or once it has a
       # ceiling of its own.
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zbk/cmd/zbk@main lint --dir .
-          --require-standalone --max-fragments 197
+          --require-standalone --max-fragments 196
