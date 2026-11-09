@@ -38,7 +38,25 @@ distributable {
     "3.12" = "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9"
   }
 
-  sha = "https://ftp.gnu.org/gnu/grep/grep-{{version.raw}}.tar.xz.sig"
+  # ⛔⛔ THE SIGNATURE URL WAS WRITTEN HERE AS `sha`, AND `sha` MEANS SOMETHING
+  # ELSE. schema/package.schema.json:141 defines it as "where the expected
+  # SHA-256 of the archive is published, usually ${{url}}.sha256 — the build
+  # FETCHES it and refuses a mismatch", and build/runner.go:769-781 does
+  # exactly that. Measured rather than reasoned, with the builder's own reader:
+  #
+  #   fetch.DeclaredSHA256(".../grep-3.12.tar.xz.sig", "grep-3.12.tar.xz")
+  #   → no line names grep-3.12.tar.xz — the server returned text, not an
+  #     archive: "-----BEGIN PGP SIGNATURE----- …"
+  #
+  # and a checksum file that cannot be READ is a build failure on purpose
+  # (runner.go:746-749: "the upstream's checksum was unavailable, so we built
+  # anyway is exactly the reasoning that leaves a verification permanently
+  # disarmed"). So this recipe would have failed at the fetch, and `zbk lint`
+  # could not see it because linting does not fetch.
+  #
+  # There is no schema field for a detached signature — `sig` appears nowhere
+  # in zbk's Go sources, which is go-zpkg/zbk#282 — so it is recorded in
+  # `provenance` below, in prose, until there is one.
 }
 
 build {
@@ -162,9 +180,15 @@ test asserted `grep --version | grep <version>` and passed, one line above the
 wrong name. A test that checks the line it expects cannot see the line it does
 not.
 
-The digest is signature-verified, by the same key as gnu.org/gzip. Both limits
-on that warrant are the same and are restated here rather than cross-referenced,
-because a recipe should be readable alone:
+The digest is signature-verified, by the same key as gnu.org/gzip:
+
+  signature  https://ftp.gnu.org/gnu/grep/grep-3.12.tar.xz.sig  (ASCII-armoured)
+  key        https://ftp.gnu.org/gnu/gnu-keyring.gpg
+  identity   Jim Meyering
+  checked    when the digest was recorded, not at every build
+
+Both limits on that warrant are the same and are restated here rather than
+cross-referenced, because a recipe should be readable alone:
 
   - the key came from https://ftp.gnu.org/gnu/gnu-keyring.gpg, served by the
     SAME HOST as the tarball — continuity, not independence;

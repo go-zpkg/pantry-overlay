@@ -49,7 +49,19 @@ distributable {
   # digest above is, and it needs no network. This says where the warrant came
   # from, so the next person to bump the version knows a signature is published
   # and can check it rather than discovering the digest alone.
-  sha = "https://ftp.gnu.org/gnu/gzip/gzip-{{version.raw}}.tar.xz.sig"
+  # ⛔⛔ THE SIGNATURE URL WAS WRITTEN HERE AS `sha`, AND `sha` MEANS SOMETHING
+  # ELSE: "where the expected SHA-256 of the archive is published … the build
+  # FETCHES it and refuses a mismatch" (schema/package.schema.json:141,
+  # build/runner.go:769-781). Measured with the builder's own reader,
+  # fetch.DeclaredSHA256 on a `.sig` returns "no line names <archive> — the
+  # server returned text, not an archive: \"-----BEGIN PGP SIGNATURE----- …\"",
+  # and an unreadable checksum file is a build failure by design
+  # (runner.go:746-749). `zbk lint` cannot see it, because linting does not
+  # fetch.
+  #
+  # No schema field exists for a detached signature (go-zpkg/zbk#282), so it is
+  # recorded in `provenance` below until there is one:
+  #   https://ftp.gnu.org/gnu/gzip/gzip-1.15.tar.xz.sig
 }
 
 build {
