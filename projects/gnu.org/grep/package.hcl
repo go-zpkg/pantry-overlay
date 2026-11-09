@@ -46,7 +46,7 @@ build {
   #
   # 1. `"gnu.org/grep" = "*"` REMOVED — grep was its own build dependency, the
   #    only recipe among 216 here to name itself. The sandbox already has a
-  #    grep: `go-pkgx/base-toolchain/package.hcl:80` declares `gnu.org/grep`
+  #    grep: `go-zpkg/base-toolchain/package.hcl:80` declares `gnu.org/grep`
   #    beside sed and gawk, and that package is what stages the build image.
   #    Which is why 15 of the 16 recipes here that run `./configure` declare no
   #    grep at all, and why upstream's own grep recipe declares only
@@ -141,7 +141,7 @@ provenance {
 
   consulted = [
     "pkgxdev/pantry projects/gnu.org/grep/package.yml",
-    "go-pkgx/base-toolchain/package.hcl", # :80, which already provides grep
+    "go-zpkg/base-toolchain/package.hcl", # :80, which already provides grep
   ]
 
   note = <<EOT
