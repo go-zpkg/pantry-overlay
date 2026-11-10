@@ -2,7 +2,7 @@ name: ci
 
 # 183 recipes that CONSUMERS read over HTTP, and until this lane existed
 # nothing checked one. An overlay recipe is not a build input we can retry:
-# `pkgx` fetches it while resolving a closure, so a file that does not parse
+# `zpkgx` fetches it while resolving a closure, so a file that does not parse
 # breaks every install of that project, silently, for everyone — with no build
 # to go red first.
 #
