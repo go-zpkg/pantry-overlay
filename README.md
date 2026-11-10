@@ -19,7 +19,7 @@ closure that our published bottles were actually built against — e.g. curl/wge
 pin `openssl.org: ^1.1`, but openssl is now 3.x/4.x, so the upstream recipe is
 unsatisfiable against the current registry.
 
-BSD-3-Clause, © the go-pkgx authors.
+BSD-3-Clause, © the go-zpkg authors.
 
 **2. Carry recipes that exist only here.** A recipe the go-zpkg factory adds
 through `packages/overrides/` (a creation patch) reaches the BUILD and nothing
