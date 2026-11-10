@@ -72,7 +72,7 @@ build {
 make olddefconfig
 EOT
     },
-    "make --jobs {{ hw.concurrency }} CC=\"$BK_CC_FREESTANDING\" $KERNEL_IMAGE",
+    "make --jobs {{ hw.concurrency }} CC=\"$ZBK_CC_FREESTANDING\" $KERNEL_IMAGE",
     "mkdir -p \"{{prefix}}/boot\" \"{{prefix}}/share/kernel\"",
     "cp \"$KERNEL_IMAGE_PATH\" \"{{prefix}}/boot/Image\"",
     "cp .config \"{{prefix}}/share/kernel/config\"",

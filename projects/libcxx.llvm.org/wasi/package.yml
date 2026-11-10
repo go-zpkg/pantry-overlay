@@ -24,7 +24,7 @@ versions:
 # exceptions and without libunwind. A C++ project that throws needs the
 # exceptions flavour (wasi-sdk "DUAL": -fwasm-exceptions + libunwind), not built yet.
 #
-# Layout (so that zbk's stencil can name it, wrapper.go BK_WASI_CXX):
+# Layout (so that zbk's stencil can name it, wrapper.go ZBK_WASI_CXX):
 #   include/wasm32-wasip1/c++/v1   headers incl. __config_site
 #   lib/wasm32-wasip1/libc++.a libc++abi.a
 
