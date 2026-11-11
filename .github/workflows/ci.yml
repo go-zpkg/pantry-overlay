@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v7
-        with: { go-version: '1.27.3' }
+        with: { go-version: '1.27.4' }
 
       # Read by the LOADER THE BUILDER USES — same formats, same schema, same
       # refusals — rather than by a script that re-states parts of the schema
