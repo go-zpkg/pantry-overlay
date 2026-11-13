@@ -9,9 +9,9 @@ versions:
 # libc++ and libc++abi for wasm32-wasip1: C++ for the wasip1 target.
 #
 # Cross toolchain part, published for the HOST platforms: the contents are wasm32
-# archives and headers. Built with the llvm.org bottle from the llvm-project source
+# archives and headers. Built with the llvm.org artifact from the llvm-project source
 # of the SAME version, against the wasi-libc sysroot and the compiler-rt builtins
-# bottles, following WebAssembly/wasi-sdk's cmake/wasi-sdk-sysroot.cmake
+# artifacts, following WebAssembly/wasi-sdk's cmake/wasi-sdk-sysroot.cmake
 # (define_libcxx_sub, lines 272-411 at wasi-sdk-34): the `runtimes` build of
 # libcxx;libcxxabi, static, pthread API on (wasi-libc stubs it: wasi-libc README,
 # "Building in pthread support"), filesystem on, no shared libraries, no LTO twin.
@@ -20,11 +20,11 @@ versions:
 # wasm32-wasip1 does NOT default to -fno-exceptions (the first build referenced
 # __cxa_throw: "undefined symbol: __cxa_allocate_exception"), and the cmake probe
 # for the flag fails under these cross flags, so -fno-exceptions is stated in
-# CMAKE_CXX_FLAGS here and in zbk's C++ stencil. libc++/libc++abi are built without
+# CMAKE_CXX_FLAGS here and in zpkb's C++ stencil. libc++/libc++abi are built without
 # exceptions and without libunwind. A C++ project that throws needs the
 # exceptions flavour (wasi-sdk "DUAL": -fwasm-exceptions + libunwind), not built yet.
 #
-# Layout (so that zbk's stencil can name it, wrapper.go ZBK_WASI_CXX):
+# Layout (so that zpkb's stencil can name it, wrapper.go ZBK_WASI_CXX):
 #   include/wasm32-wasip1/c++/v1   headers incl. __config_site
 #   lib/wasm32-wasip1/libc++.a libc++abi.a
 

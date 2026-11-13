@@ -39,7 +39,7 @@ EOT
   env {
     CGO_ENABLED = "0"
     GOBIN       = "{{prefix}}/bin"
-    # go.mod says go 1.27.1: build with the go.dev bottle, never a toolchain
+    # go.mod says go 1.27.1: build with the go.dev artifact, never a toolchain
     # downloaded behind the factory's back.
     GOTOOLCHAIN = "local"
     ARGS = [

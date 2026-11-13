@@ -64,7 +64,7 @@ members = {
     # mirror at all.
 
   "gnu.org/binutils" = "*"
-    # ar/ranlib: the llvm bottle ships llvm-ar, not `ar`
+    # ar/ranlib: the llvm artifact ships llvm-ar, not `ar`
 
   "gnu.org/make" = "*"
     # the build driver most recipes use
@@ -119,7 +119,7 @@ members = {
 
   "gnu.org/gcc/libstdcxx" = "*"
     # clang itself is a C++ program, and the llvm.org
-    # bottle we install is MIRRORED — linked against the
+    # artifact we install is MIRRORED — linked against the
     # libstdc++ of whatever distro built it. In a tree
     # that has no distro, clang does not start:
     # clang: error while loading shared libraries:

@@ -52,7 +52,7 @@ distributable {
 
   # ⛔⛔ CORROBORATED BY TWO INDEPENDENT PATHS, WHICH IS THE POINT. GitHub's
   # release CDN was answering 504 while this was written, so the bytes were
-  # fetched from the SourceForge mirror with `zbk sourcepin` — the builder's
+  # fetched from the SourceForge mirror with `zpkb sourcepin` — the builder's
   # own fetcher, which checks the status, resumes a truncated body and refuses
   # one whose magic bytes are not the archive's:
   #
@@ -65,7 +65,7 @@ distributable {
   # party's record is a stronger warrant than either alone — and it is needed
   # HERE in particular, because our own fetcher carries a note that SourceForge
   # "had handed the runner something else" and cost pcre.org 8.45 a whole
-  # factory run (zbk fetch/download.go). One source would not have been enough
+  # factory run (zpkb fetch/download.go). One source would not have been enough
   # for this package.
   sha256 = {
     "5.8.4" = "0014c7886930454fe8bd4228665b51af55eeae560ea135c9c4cd33f55b2591d9"
@@ -93,7 +93,7 @@ build {
 # (go-zpkg/pantry-overlay#28). The shell wrappers xz installs — xzdiff, xzgrep,
 # xzless, xzmore — are deliberately NOT listed: they are /bin/sh scripts, so
 # they do not run in an empty image (go-zpkg/zpkgx#151), and naming them here
-# would promise something this bottle cannot keep everywhere.
+# would promise something this artifact cannot keep everywhere.
 provides = [
   "bin/xz",
   "bin/unxz",
@@ -184,7 +184,7 @@ provenance {
     "homebrew-core Formula/x/xz.rb",
     "nixpkgs (for the GitHub-release-first source order)",
     "go-zpkg/pantry-overlay#28 (our own: the darwin liblzma link)",
-    "go-zpkg/zbk#397 (our own: this project bakes its localedir)",
+    "go-zpkg/zpkb#397 (our own: this project bakes its localedir)",
   ]
 
   note = <<EOT
@@ -194,7 +194,7 @@ own NEWS says they added and then patched a backdoor, and the digest is
 corroborated by two independent paths rather than taken from one host.
 
 ⛔ --disable-nls was CONSIDERED AND REJECTED, and the reason is a lesson about
-reading sources. go-zpkg/zbk#397 is titled "xz lzmainfo localedir": this
+reading sources. go-zpkg/zpkb#397 is titled "xz lzmainfo localedir": this
 project compiles its localedir into its binaries as data, where no rpath
 rewrite reaches it, and --disable-nls would remove that. But INSTALL:788-789
 offers that flag only for xzdec and lzmadec — "There are and will be no

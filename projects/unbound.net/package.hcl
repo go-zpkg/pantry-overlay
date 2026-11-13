@@ -10,12 +10,12 @@ build {
     "libexpat.github.io"     = "*"
   }
   # ⛔⛔ THE VARIABLE WAS $PKGX_DIR, WHICH NOTHING SETS — AND AN EMPTY LEFT-HAND
-  # SIDE IS NOT A NO-OP. zbk runs every build script under a CLOSED environment
+  # SIDE IS NOT A NO-OP. zpkb runs every build script under a CLOSED environment
   # (`build.SanitizedEnv`, build/build.go:745-769: PATH, HOME, ZPKG_DIR,
   # MAKEFLAGS, FORCE_UNSAFE_CONFIGURE, plus the ZPKG_DIST/PANTRY/VERIFY
-  # pass-through). `PKGX_DIR` is in neither that list nor anywhere else in zbk
-  # or bottle's sources — the store variable has been `ZPKG_DIR` since the
-  # rename (build/build.go:749, cmd/zbk/builder.go:626, bottle/pkgx.go:381).
+  # pass-through). `PKGX_DIR` is in neither that list nor anywhere else in zpkb
+  # or artifact's sources — the store variable has been `ZPKG_DIR` since the
+  # rename (build/build.go:749, cmd/zpkb/builder.go:626, artifact/pkgx.go:381).
   #
   # So the substitution ran as `s|/|$PKGX_DIR/|g`: not "replace the store
   # path", but "replace EVERY SLASH", which rewrites every absolute path in

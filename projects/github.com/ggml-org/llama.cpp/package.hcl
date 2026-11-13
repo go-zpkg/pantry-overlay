@@ -7,8 +7,8 @@
 # ⛔ GGML_NATIVE=OFF IS NOT A TUNING CHOICE. Upstream defaults it ON, which
 # compiles with `-march=native` — the build machine's own instruction set baked
 # into the binary. That is correct for someone building on the machine they
-# will run on, and wrong for every bottle, which is built on a CI runner and
-# run somewhere else: the first host without AVX-512 gets SIGILL. The bottle
+# will run on, and wrong for every artifact, which is built on a CI runner and
+# run somewhere else: the first host without AVX-512 gets SIGILL. The artifact
 # keeps ggml's runtime CPU dispatch instead, which is what it is for.
 
 display-name = "llama.cpp"
@@ -70,7 +70,7 @@ build {
       # build like ours, so this changes nothing TODAY. It is stated because
       # `provides` depends on it: if upstream flips the default, the recipe
       # should keep installing what it promises rather than start publishing a
-      # bottle with no executables in it.
+      # artifact with no executables in it.
       "-DLLAMA_TOOLS_INSTALL=ON",
       # Stated rather than left to the default, so that a builder without
       # OpenSSL fails here instead of silently producing a binary that cannot
@@ -88,7 +88,7 @@ build {
       # Metal is upstream's default on darwin and is what the platform is for.
       # EMBED_LIBRARY puts the shader source inside the binary: without it the
       # library is looked up next to the executable at RUN time, which a
-      # relocatable bottle cannot promise.
+      # relocatable artifact cannot promise.
       ARGS = [
         "-DGGML_METAL=ON",
         "-DGGML_METAL_EMBED_LIBRARY=ON",
@@ -119,7 +119,7 @@ test {
     # --version writes to stderr and exits non-zero on some builds, so the
     # check is on the text, not on the status.
     "llama-cli --version 2>&1 | grep -q 'version'",
-    # ⛔ THE BACKEND IS PART OF THE TEST. A darwin bottle that silently lost
+    # ⛔ THE BACKEND IS PART OF THE TEST. A darwin artifact that silently lost
     # Metal would still pass every file-exists check above and would simply be
     # slow, which is the kind of regression nobody notices for months.
     "llama-bench --help 2>&1 | grep -q 'usage'",
@@ -127,7 +127,7 @@ test {
     # buildscript.Generate reads only `script`, `working-directory`, `env`
     # and the node's fixture; a platform-keyed sub-block is not one of them,
     # and the schema accepted it anyway (additionalProperties: true). So the
-    # Metal assertion above — written precisely because a darwin bottle that
+    # Metal assertion above — written precisely because a darwin artifact that
     # lost Metal passes every other check and is merely slow — has never been
     # made on any build.
     #

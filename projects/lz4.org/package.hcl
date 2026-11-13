@@ -41,7 +41,7 @@ distributable {
   url              = "https://github.com/lz4/lz4/releases/download/v{{version.raw}}/lz4-{{version.raw}}.tar.gz"
   strip-components = 1
 
-  # Fetched here with `zbk sourcepin` — the builder's own fetcher, which checks
+  # Fetched here with `zpkb sourcepin` — the builder's own fetcher, which checks
   # the status, resumes a truncated body and refuses one whose magic bytes are
   # not the archive's — giving 545646 bytes and the digest below.
   #

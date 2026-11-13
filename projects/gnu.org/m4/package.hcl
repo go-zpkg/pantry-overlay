@@ -34,7 +34,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/m4/m4-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <gnu-keyring.gpg>
+  # Recorded with `zpkb sourcepin --sig auto --key <gnu-keyring.gpg>
   # --fingerprint "71C2 CC22 B1C4 6029 27D2  F3AA A7A1 6B4A 2527 436A"`:
   # 2 080 016 bytes, signed by Eric Blake <eblake@redhat.com>, the named key
   # found after walking 327 primary keys in the GNU keyring.
@@ -70,7 +70,7 @@ distributable {
   # the SIGNATURE's URL in `sha`, and `sha` means "where the expected SHA-256 is
   # published" — a file the build FETCHES and compares. It would have failed
   # every build (#89). The signature URL lives in `provenance` below, because
-  # no schema field exists for one (go-zpkg/zbk#282).
+  # no schema field exists for one (go-zpkg/zpkb#282).
 }
 
 build {
@@ -113,7 +113,7 @@ build {
   # ⭐ So /bin/sh is BETTER here than naming the store path would be: the
   # symlink is the indirection that survives gnu.org/bash being rebuilt at a new
   # version, whereas a baked-in `$ZPKG_DIR/gnu.org/bash/v5.3/bin/bash` would
-  # pin this bottle to one version of another package. The test below asserts
+  # pin this artifact to one version of another package. The test below asserts
   # it resolves.
   script = <<EOT
 ./configure $ARGS
@@ -139,7 +139,7 @@ test {
     # ⛔⛔ THE ASSERTION THAT COSTS NOTHING AND ANSWERS THE BUILD'S ONE REAL
     # QUESTION. `esyscmd` execs the shell that was compiled in — /bin/sh, per
     # the build note above — so this is what proves the default resolved in the
-    # tree this bottle was built in. If /bin/sh were absent or not a shell,
+    # tree this artifact was built in. If /bin/sh were absent or not a shell,
     # m4 would still pass `--version` and every expansion above, and autoconf
     # would fail later with a message about something else entirely: m4's own
     # configure.ac:21 calls `m4_esyscmd([build-aux/git-version-gen …])`, so the

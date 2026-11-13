@@ -1,5 +1,5 @@
 # This overlay exists for ONE line: upstream pins `openssl.org: ^1.1`, and
-# this registry publishes no openssl 1.x — all 48 bottles are 3.x or 4.x —
+# this registry publishes no openssl 1.x — all 48 artifacts are 3.x or 4.x —
 # so the recipe would die in the resolver before a compiler ran. openssl
 # 1.1.1 has been end-of-life since September 2023.
 #
@@ -12,7 +12,7 @@
 #
 # ⛔ AND THEY MOVE TOGETHER. Upstream's own comment: re2 and protobuf must
 # be built against the same abseil LTS line, and protobuf 36.2.0 is the
-# build against 20260526 — earlier bottles use 20250512 or 20250127 and
+# build against 20260526 — earlier artifacts use 20250512 or 20250127 and
 # mangle differently. Bumping abseil alone would have satisfied the check
 # and broken the invariant it exists to protect.
 dependencies = {

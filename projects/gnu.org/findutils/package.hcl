@@ -30,17 +30,17 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/findutils/findutils-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <james-youngman-C5DDACB9.asc>
+  # Recorded with `zpkb sourcepin --sig auto --key <james-youngman-C5DDACB9.asc>
   # --fingerprint 0CF4E8D871593224842832B888DD9E08C5DDACB9`: 2 451 424 bytes,
   # signed by James Youngman <james@youngman.org>, 1 key read from the file.
   #
   # ⭐⭐ AND THIS IS THE FIRST RECIPE HERE WHOSE KEY DID NOT COME FROM THE HOST
   # THAT SERVED THE TARBALL. Every GNU recipe before it noted the same limit:
   # gnu-keyring.gpg is fetched from ftp.gnu.org, which is continuity, not
-  # independence. That keyring could not answer here at all — `zbk sourcepin`
+  # independence. That keyring could not answer here at all — `zpkb sourcepin`
   # refused with "no key matching 0CF4E8D8… among the 402 primary key(s) that
   # could be read, and the packet stream stops being readable after them"
-  # (go-zpkg/zbk#450's own wording, distinguishing absent from unreadable). So
+  # (go-zpkg/zpkb#450's own wording, distinguishing absent from unreadable). So
   # the key was fetched BY FINGERPRINT from keyserver.ubuntu.com instead, and
   # the warrant is now three hosts that do not derive from each other:
   #
@@ -74,7 +74,7 @@ distributable {
   #
   # No `sha` field: that one means "where the expected SHA-256 is published" and
   # the build fetches it, so a signature URL there fails every build (#89). The
-  # signature is in `provenance` below (go-zpkg/zbk#282).
+  # signature is in `provenance` below (go-zpkg/zpkb#282).
 }
 
 # ⛔⛔ A RUNTIME DEPENDENCY, AND A CONFIGURE-TIME ONE, FOR THE SAME REASON.
@@ -91,7 +91,7 @@ distributable {
 # because the need is real and measured, not because it resolves yet; until
 # coreutils is completed, a build of findutils in a tree with no other source of
 # `sort` will fail at the `-z` probe's expectations, and the test block says so
-# out loud instead of producing a quietly weaker bottle.
+# out loud instead of producing a quietly weaker artifact.
 dependencies = {
   "gnu.org/coreutils" = "*"
 }
@@ -131,7 +131,7 @@ build {
     # `sort="@SORT@ -z"`. Found on PATH, the value is an ABSOLUTE PATH, so this
     # package's own installed script would carry
     # `$ZPKG_DIR/gnu.org/coreutils/v<ver>/bin/sort` — another package's
-    # VERSIONED store path, stale the day coreutils is rebuilt. go-zpkg/zbk#397
+    # VERSIONED store path, stale the day coreutils is rebuilt. go-zpkg/zpkb#397
     # again, one package over.
     #
     # ⭐⭐ AND THE REMEDY IS THE OPPOSITE OF diffutils', FOR A REASON THAT IS
@@ -141,7 +141,7 @@ build {
     # consumer is a shell script — `$sort` in a pipeline — which DOES search
     # PATH, and `find -exec`/`xargs` use `execvp` as well (find/exec.c:349,
     # xargs/xargs.c:1383). So the right value is the bare NAME, which keeps the
-    # bottle relocatable AND keeps the feature:
+    # artifact relocatable AND keeps the feature:
     #
     #   configure:72523   if test ${ac_cv_path_SORT+y}      — set, not non-empty
     #   configure:72529   "Let the user override the test with a path"
@@ -201,7 +201,7 @@ test {
     "grep -q two t/cat.out",
 
     # -exec uses execvp (find/exec.c:349), so it resolves on PATH; asserted
-    # because a bottle whose -exec cannot launch anything passes every test
+    # because an artifact whose -exec cannot launch anything passes every test
     # above.
     "find t/d -name 'a.txt' -exec cat {} \\;",
 
@@ -213,7 +213,7 @@ test {
 
     # ⛔⛔ THE ASSERTION FOR THE PROBE THAT CANNOT BE PRESET. `if true` is
     # SORT_SUPPORTS_Z, substituted at updatedb.sh:109. `if false` means the
-    # sandbox had no GNU sort and this bottle's updatedb is not NUL-safe — a
+    # sandbox had no GNU sort and this artifact's updatedb is not NUL-safe — a
     # difference nothing else observes.
     "grep -q '^if true$' {{prefix}}/bin/updatedb",
 

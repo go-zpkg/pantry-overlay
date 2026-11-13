@@ -10,9 +10,9 @@ versions:
 # libc.a, the libwasi-emulated-{signal,mman,process-clocks,getpid}.a emulation
 # libraries, libsetjmp.a, crt1*.o). A wasip1 build passes `--sysroot=<this prefix>`.
 #
-# Cross toolchain part: its contents are wasm32, the bottle is published for the
-# HOST platforms. Built from source with the llvm.org bottle and the
-# compiler-rt builtins bottle, following wasi-sdk's cmake/wasi-sdk-sysroot.cmake
+# Cross toolchain part: its contents are wasm32, the artifact is published for the
+# HOST platforms. Built from source with the llvm.org artifact and the
+# compiler-rt builtins artifact, following wasi-sdk's cmake/wasi-sdk-sysroot.cmake
 # (define_wasi_libc_sub, lines 171-239 at wasi-sdk-34): the wasi-libc CMake
 # build with TARGET_TRIPLE=wasm32-wasip1, BUILTINS_LIB pointing at OUR compiler-rt
 # (wasi-libc's README: left unset it DOWNLOADS one, which a sovereign build must
