@@ -92,7 +92,7 @@ build {
 # project came to be declared a runtime dependency of it at all
 # (go-zpkg/pantry-overlay#28). The shell wrappers xz installs — xzdiff, xzgrep,
 # xzless, xzmore — are deliberately NOT listed: they are /bin/sh scripts, so
-# they do not run in an empty image (go-zpkg/zpkgx#151), and naming them here
+# they do not run in an empty image (go-zpkg/zpkx#151), and naming them here
 # would promise something this artifact cannot keep everywhere.
 provides = [
   "bin/xz",

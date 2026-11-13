@@ -19,7 +19,7 @@ dependencies = {
   # In BOTH halves, for the reason the build.dependencies comment below
   # already gives: go-zpkg/packages carries the same edit as an override for
   # the recipe zpkb builds, and this is the half a CONSUMER resolves from — the
-  # one `zpkgx +llvm.org` reads when it assembles a test environment.
+  # one `zpkx +llvm.org` reads when it assembles a test environment.
   #
   # Scoped: an artifact links the soname that was in the store when it was
   # built, so tightening this for an arch whose artifact links .so.2 would
