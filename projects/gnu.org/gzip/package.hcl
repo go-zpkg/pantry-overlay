@@ -29,9 +29,9 @@ distributable {
 
   # ⛔⛔ THE FIRST SIGNATURE-VERIFIED PIN IN THIS TREE. ftp.gnu.org publishes a
   # detached signature beside every tarball, and nothing in this builder read
-  # one until zbk v0.73.0. Recorded with:
+  # one until zpkb v0.73.0. Recorded with:
   #
-  #   zbk sourcepin --sig auto --key ./gnu-keyring.gpg \
+  #   zpkb sourcepin --sig auto --key ./gnu-keyring.gpg \
   #     --key-source "https://ftp.gnu.org/gnu/gnu-keyring.gpg, 2026-11-08" \
   #     --fingerprint "155D 3FC5 00C8 3448 6D1E  EA67 7FD9 FCCB 000B EEEE" \
   #     --version 1.15 https://ftp.gnu.org/gnu/gzip/gzip-1.15.tar.xz
@@ -56,10 +56,10 @@ distributable {
   # fetch.DeclaredSHA256 on a `.sig` returns "no line names <archive> — the
   # server returned text, not an archive: \"-----BEGIN PGP SIGNATURE----- …\"",
   # and an unreadable checksum file is a build failure by design
-  # (runner.go:746-749). `zbk lint` cannot see it, because linting does not
+  # (runner.go:746-749). `zpkb lint` cannot see it, because linting does not
   # fetch.
   #
-  # No schema field exists for a detached signature (go-zpkg/zbk#282), so it is
+  # No schema field exists for a detached signature (go-zpkg/zpkb#282), so it is
   # recorded in `provenance` below until there is one:
   #   https://ftp.gnu.org/gnu/gzip/gzip-1.15.tar.xz.sig
 }

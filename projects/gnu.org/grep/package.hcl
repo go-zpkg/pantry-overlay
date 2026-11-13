@@ -25,7 +25,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/grep/grep-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <gnu-keyring.gpg>
+  # Recorded with `zpkb sourcepin --sig auto --key <gnu-keyring.gpg>
   # --fingerprint "155D 3FC5 00C8 3448 6D1E  EA67 7FD9 FCCB 000B EEEE"`:
   # 1 918 448 bytes, signed 2025-04-10 with SHA-512 by Jim Meyering
   # <jim@meyering.net>, the named key found after walking 326 primary keys in
@@ -51,11 +51,11 @@ distributable {
   # and a checksum file that cannot be READ is a build failure on purpose
   # (runner.go:746-749: "the upstream's checksum was unavailable, so we built
   # anyway is exactly the reasoning that leaves a verification permanently
-  # disarmed"). So this recipe would have failed at the fetch, and `zbk lint`
+  # disarmed"). So this recipe would have failed at the fetch, and `zpkb lint`
   # could not see it because linting does not fetch.
   #
   # There is no schema field for a detached signature — `sig` appears nowhere
-  # in zbk's Go sources, which is go-zpkg/zbk#282 — so it is recorded in
+  # in zpkb's Go sources, which is go-zpkg/zpkb#282 — so it is recorded in
   # `provenance` below, in prose, until there is one.
 }
 
@@ -124,7 +124,7 @@ test {
     #   configure:48671       `#define PACKAGE_PACKAGER "$withval"`
     #   lib/version-etc.c:76  fprintf (stream, _("Packaged by %s\n"), …)
     #
-    # So every grep bottle this factory built printed `Packaged by tea` —
+    # So every grep artifact this factory built printed `Packaged by tea` —
     # naming the project this ecosystem forked from, in the one place a user
     # looks, while `grep --version | grep <version>` passed on the line above
     # it. The flag is gone; this asserts the line cannot come back.

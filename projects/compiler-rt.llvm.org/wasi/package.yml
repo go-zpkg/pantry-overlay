@@ -10,9 +10,9 @@ versions:
 # RESOURCE DIRECTORY (lib/wasm32-unknown-wasip1/libclang_rt.builtins.a plus clang's
 # own headers), so a wasip1 build passes `-resource-dir=<this prefix>`.
 #
-# It is a cross toolchain part: the contents are wasm32 archives, the bottle is
+# It is a cross toolchain part: the contents are wasm32 archives, the artifact is
 # published for the HOST platforms (it runs nowhere). Built with the llvm.org
-# bottle from the llvm-project source of the SAME version, following WebAssembly/wasi-sdk's
+# artifact from the llvm-project source of the SAME version, following WebAssembly/wasi-sdk's
 # cmake/wasi-sdk-sysroot.cmake (compiler-rt-build-<target>, lines 90-119 at
 # wasi-sdk-34): COMPILER_RT_BAREMETAL_BUILD, per-target runtime dir, only the
 # default target, no sanitizers/profile/fuzzer/xray/orc, -mcpu=lime1.
@@ -24,7 +24,7 @@ versions:
 build:
   dependencies:
     cmake.org: '>=3<3.29'
-    # cmake depends on curl.se `>=5<8.13`, which resolves to the OLDEST bottle,
+    # cmake depends on curl.se `>=5<8.13`, which resolves to the OLDEST artifact,
     # 7.86.0, linked against libssl.so.1.1 — and the rootfs has openssl 3 only:
     # "cmake: error while loading shared libraries: libssl.so.1.1" (exit 127, with
     # cmake 3.31 AND 3.28, factory runs 40323914067 and 40329351929). A curl 8
@@ -34,7 +34,7 @@ build:
     python.org: ^3
     # A dependency constraint is not templated (`^{{ version.major }}` reached the
     # resolver verbatim: "no version of llvm.org satisfies"). Same-major clang is
-    # what matters; the bottle's newest is used, which may lag the source patch
+    # what matters; the artifact's newest is used, which may lag the source patch
     # release by a version or two.
     llvm.org: '*'
   script:

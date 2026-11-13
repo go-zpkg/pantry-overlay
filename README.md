@@ -1,7 +1,7 @@
 # pantry-overlay
 
 The recipes we own, consumed by
-[`go-zpkg/bottle`](https://github.com/go-zpkg/bottle) via
+[`go-zpkg/artifact`](https://github.com/go-zpkg/artifact) via
 `ZPKG_PANTRY_OVERLAY`. A recipe here wins over any same-named recipe in the
 pantry the factory is reading; what is absent here still falls back to that
 pantry, which is why this is called an overlay.
@@ -15,7 +15,7 @@ the part that is already ours.
 Two purposes.
 
 **1. Correct stale dependency constraints** so `zpkgm install` resolves the
-closure that our published bottles were actually built against — e.g. curl/wget/git
+closure that our published artifacts were actually built against — e.g. curl/wget/git
 pin `openssl.org: ^1.1`, but openssl is now 3.x/4.x, so the upstream recipe is
 unsatisfiable against the current registry.
 
@@ -26,8 +26,8 @@ through `packages/overrides/` (a creation patch) reaches the BUILD and nothing
 else: `overrides/` is applied to the pantry checkout the factory builds from,
 while a consumer resolving a closure reads the pantry over HTTP and gets a 404.
 
-`kernel.org/linux` is the case that showed it. The bottle is published, signed
-and attested — and `bottle.ResolveClosureFor` could not resolve it at all, so
+`kernel.org/linux` is the case that showed it. The artifact is published, signed
+and attested — and `artifact.ResolveClosureFor` could not resolve it at all, so
 the only way to install the kernel was to pick its version straight from the
 registry and skip the closure walk. **A package published without a readable
 recipe is half published.** Recipes created by an override belong here too.

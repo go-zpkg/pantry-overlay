@@ -29,7 +29,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/bash/bash-{{version.raw}}.tar.gz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <gnu-keyring.gpg>
+  # Recorded with `zpkb sourcepin --sig auto --key <gnu-keyring.gpg>
   # --fingerprint 7C0135FB088AAF6C66C650B9BB5869F064EA74AB`: 11 355 854 bytes,
   # signed 2025-07-30 by Chet Ramey <chet@cwru.edu>, the named key found after
   # walking 143 primary keys in the GNU keyring. Confirmed by a second,
@@ -53,10 +53,10 @@ distributable {
   # fetch.DeclaredSHA256 on a `.sig` returns "no line names <archive> — the
   # server returned text, not an archive: \"-----BEGIN PGP SIGNATURE----- …\"",
   # and an unreadable checksum file is a build failure by design
-  # (runner.go:746-749). `zbk lint` cannot see it, because linting does not
+  # (runner.go:746-749). `zpkb lint` cannot see it, because linting does not
   # fetch.
   #
-  # No schema field exists for a detached signature (go-zpkg/zbk#282), so it is
+  # No schema field exists for a detached signature (go-zpkg/zpkb#282), so it is
   # recorded in `provenance` below until there is one:
   #   https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz.sig
 }

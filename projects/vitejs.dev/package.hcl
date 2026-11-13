@@ -1,6 +1,6 @@
 # The upstream recipe caps node at `^16 || ^18 || ^20`, and our node 20 line
-# CANNOT RUN here: the published nodejs.org v20.20.2 bottle is linked against
-# libcrypto.so.1.1, while every openssl bottle in this registry is 3.x or 4.x.
+# CANNOT RUN here: the published nodejs.org v20.20.2 artifact is linked against
+# libcrypto.so.1.1, while every openssl artifact in this registry is 3.x or 4.x.
 # Measured 2026-10-21 rebuilding vitejs.dev 8.3.5 on both linux arches:
 #
 #   npm install . --global --prefix=/pkgx/vitejs.dev/v8.3.5+brewing

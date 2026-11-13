@@ -35,7 +35,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/patch/patch-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto
+  # Recorded with `zpkb sourcepin --sig auto
   # --key <andreas-gruenbacher-0313653A.asc>
   # --fingerprint "259B 3792 B3D6 D319 212C C4DC D5BF 9FEB 0313 653A"`:
   # 940 364 bytes, signed by Andreas Gruenbacher <agruen@gnu.org>, 1 key read
@@ -65,7 +65,7 @@ distributable {
   #
   # No `sha` field: that one means "where the expected SHA-256 is published" and
   # the build fetches it, so a signature URL there fails every build (#89). The
-  # signature is in `provenance` below (go-zpkg/zbk#282).
+  # signature is in `provenance` below (go-zpkg/zpkb#282).
 }
 
 build {
@@ -100,7 +100,7 @@ build {
     #
     # so without this line `patch` would compile in
     # `$ZPKG_DIR/gnu.org/ed/v<ver>/bin/ed` — another package's VERSIONED store
-    # path, as data, stale the day gnu.org/ed is rebuilt (go-zpkg/zbk#397).
+    # path, as data, stale the day gnu.org/ed is rebuilt (go-zpkg/zpkb#397).
     #
     # ⭐ WHAT THE REMEDY IS DEPENDS ON THE CONSUMER, WHICH IS WHY THIS IS READ
     # EVERY TIME RATHER THAN RULED ONCE. Three recipes, one macro, three
@@ -146,7 +146,7 @@ test {
     # ⛔⛔ THE ASSERTION FOR THE BAKED PATH. `EDITOR_PROGRAM " -s "` is one
     # compiled string, so the binary carries `ed -s ` when the name is bare and
     # `/…/bin/ed -s ` when a store path was baked in. The negative is the one
-    # that matters: it is the only observable difference between a bottle built
+    # that matters: it is the only observable difference between an artifact built
     # here and one built on a host that happened to have `ed`.
     "grep -q 'ed -s' {{prefix}}/bin/patch",
     "! grep -q '/bin/ed -s' {{prefix}}/bin/patch",

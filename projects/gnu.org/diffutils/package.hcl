@@ -28,7 +28,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/diffutils/diffutils-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <gnu-keyring.gpg>
+  # Recorded with `zpkb sourcepin --sig auto --key <gnu-keyring.gpg>
   # --fingerprint "155D 3FC5 00C8 3448 6D1E  EA67 7FD9 FCCB 000B EEEE"`:
   # 1 938 800 bytes, signed by Jim Meyering <jim@meyering.net>, the named key
   # found after walking 326 primary keys in the GNU keyring.
@@ -53,7 +53,7 @@ distributable {
 
   # No `sha` field: that one means "where the expected SHA-256 is published" and
   # the build fetches it, so a signature URL there fails every build (#89). The
-  # signature is in `provenance` below (go-zpkg/zbk#282).
+  # signature is in `provenance` below (go-zpkg/zpkb#282).
 }
 
 build {
@@ -80,7 +80,7 @@ build {
     # `pr` belongs to gnu.org/coreutils, so in this factory's sandbox the string
     # compiled into `diff` would be
     # `$ZPKG_DIR/gnu.org/coreutils/v<ver>/bin/pr` — another package's VERSIONED
-    # store path, as data. That is go-zpkg/zbk#397's class exactly: "a store
+    # store path, as data. That is go-zpkg/zpkb#397's class exactly: "a store
     # path is compiled into binaries as data … no rpath rewrite reaches it". It
     # goes stale the day coreutils is rebuilt.
     #
@@ -139,13 +139,13 @@ test {
     # ⛔⛔ THE ASSERTION FOR THE DECISION ABOVE. With PR_PROGRAM empty, `-l`
     # must REFUSE rather than exec something: this is what proves no absolute
     # path was baked in, and it is the only observable difference between a
-    # bottle built here and one built on a host that happened to have `pr`.
+    # artifact built here and one built on a host that happened to have `pr`.
     "! diff -l t/1 t/3",
     "diff -l t/1 t/3 2>&1 | grep -q 'pagination not supported'",
 
     # diff3 execs DEFAULT_DIFF_PROGRAM (src/diff3.c:1113,1144) — its own `diff`,
     # from this same prefix, which the store puts on PATH. Asserted because a
-    # bottle whose diff3 cannot find its diff passes every test above.
+    # artifact whose diff3 cannot find its diff passes every test above.
     "diff3 t/1 t/2 t/3 > /dev/null || true",
     "diff3 --version | grep {{version.raw}}",
   ]

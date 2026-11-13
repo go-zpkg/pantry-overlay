@@ -37,7 +37,7 @@ jobs:
       # divergence could have presented. The next one would have been a recipe
       # it judged fine and the builder could not read.
       #
-      # `zbk lint` FAILS on an empty tree. A sweep that cannot find its corpus
+      # `zpkb lint` FAILS on an empty tree. A sweep that cannot find its corpus
       # reports the same absence of problems as one that read it all, and the
       # count it prints is the only thing that tells the two apart.
       #
@@ -50,17 +50,17 @@ jobs:
       # by the loader the builder uses since. A gate that fails for a reason of
       # its own is not a gate; it is a red light nobody reads.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zbk/cmd/zbk@main lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
-      # all 183 entries to the keys they CHANGE, and that was right: bottle
+      # all 183 entries to the keys they CHANGE, and that was right: artifact
       # merges this tree OVER PantryBase, so an omitted key is inherited and a
       # small curated tree can correct a stale constraint without forking 1700
       # files.
       #
       # It is exactly wrong for a pantry. `PantryBase` is still
-      # `pkgxdev/pantry` compiled in (bottle/pkgx.go:68), so a fragment
+      # `pkgxdev/pantry` compiled in (artifact/pkgx.go:68), so a fragment
       # resolves only because somebody else's recipe sits underneath it — the
       # recipe we may not copy, which is why ours are written rather than
       # converted (go-zpkg/packages#431).
@@ -92,5 +92,5 @@ jobs:
       # ceiling of its own.
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zbk/cmd/zbk@main lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
           --require-standalone --max-fragments 195

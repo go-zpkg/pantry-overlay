@@ -32,7 +32,7 @@ distributable {
   url              = "https://ftp.gnu.org/gnu/tar/tar-{{version.raw}}.tar.xz"
   strip-components = 1
 
-  # Recorded with `zbk sourcepin --sig auto --key <gnu-keyring.gpg>
+  # Recorded with `zpkb sourcepin --sig auto --key <gnu-keyring.gpg>
   # --fingerprint 3602B07F55D0C732`: 2 317 208 bytes, signed by
   # Sergey Poznyakoff (Gray) <gray@mirddin.farlep.net>, found after walking 12
   # primary keys in the GNU keyring. Full fingerprint of the key that signed it:
@@ -46,7 +46,7 @@ distributable {
   #   gpg --recv-keys 3602B07F55D0C732
   #
   # Sixteen hex digits, which are the last sixteen of the fingerprint above.
-  # `--fingerprint` accepted only forty until go-zpkg/zbk#450, so this recipe
+  # `--fingerprint` accepted only forty until go-zpkg/zpkb#450, so this recipe
   # could not be written at all: the strongest identifier its author publishes
   # was the one form the tool refused. A 32-bit short id stays refused, and that
   # refusal is the security content — colliding keys for a chosen short id have
@@ -68,7 +68,7 @@ distributable {
 
   # No `sha` field: that one means "where the expected SHA-256 is published" and
   # the build fetches it, so a signature URL there fails every build (#89). The
-  # signature is in `provenance` below (go-zpkg/zbk#282).
+  # signature is in `provenance` below (go-zpkg/zpkb#282).
 }
 
 # ⛔⛔ A RUNTIME DEPENDENCY, AND IT IS THE POINT OF THIS RECIPE'S EXISTENCE.
@@ -91,7 +91,7 @@ distributable {
 #   #define GZIP_PROGRAM "$tar_cv_compressor_gzip"
 #
 # a plain default with NO filesystem probe, so nothing of the build host is
-# baked in and the bottle stays relocatable. Contrast go-zpkg/zbk#397, where a
+# baked in and the artifact stays relocatable. Contrast go-zpkg/zpkb#397, where a
 # store path was compiled into a binary as data: that cannot happen here.
 dependencies = {
   "gnu.org/gzip" = "*"
@@ -108,9 +108,9 @@ build {
       # ⛔⛔ EXPLICIT, AND NOT BECAUSE ACLs ARE UNWANTED. configure.ac:72-83
       # defaults `with_posix_acls=yes` and then turns itself OFF when
       # `sys/acl.h` or libacl are missing, silently. So the feature set of the
-      # bottle would be decided by what the build sandbox happened to contain:
+      # artifact would be decided by what the build sandbox happened to contain:
       # a host with libacl yields a tar with ACL support, one without yields a
-      # tar that looks identical and lacks it. Naming it makes the bottle the
+      # tar that looks identical and lacks it. Naming it makes the artifact the
       # same wherever it is built, which is the property a pinned digest is
       # supposed to carry.
       "--without-posix-acls",
@@ -149,7 +149,7 @@ test {
     # ⛔⛔ THE ASSERTION THAT ANSWERS THIS RECIPE'S ONE REAL QUESTION. `-z`
     # execs GZIP_PROGRAM, which is the bare name `gzip` resolved on PATH, so
     # this is what proves the declared dependency actually resolves in the tree
-    # the bottle was built in. Without it tar passes `--version` and every
+    # the artifact was built in. Without it tar passes `--version` and every
     # uncompressed operation above while `tar -xzf` dies with
     # "gzip: command not found" — and the recipes that hit that on 2026-09-02
     # reported it as their own failure, not as tar's.
