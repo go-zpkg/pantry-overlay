@@ -94,10 +94,17 @@ test {
     "botan cipher --decrypt --cipher=Serpent/CBC/PKCS7 --key=000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f --nonce=000102030405060708090a0b0c0d0e0f ct.bin > back.txt",
     "cmp plain.txt back.txt",
 
-    # 3. Clearing a CPUID bit selects a different kernel and must not change the
-    #    result: the AVX2/AVX-512 paths and the scalar path agree.
-    "botan speed --msec=10 --clear-cpuid=avx512f,avx2 --buf-size=4096 Serpent > speed-scalar.out 2>&1",
-    "grep -q 'Serpent' speed-scalar.out",
+    # 3. Clearing CPUID bits selects a different kernel, and the tag `speed`
+    #    prints names the kernel that ran. The names are Botan's own
+    #    (src/lib/utils/cpuid/cpuid_x86/cpuid_features.cpp:20, :72 "avx2";
+    #    "avx512" is the AVX-512 name; "avx512f" is NOT one: speed.cpp:470-475
+    #    only WARNS "don't know CPUID flag", which a plain run would miss).
+    #    Asserted on the property: no warning, and with both cleared no AVX tag
+    #    remains while Serpent still runs.
+    "botan speed --msec=10 --clear-cpuid=avx512,avx2 --buf-size=4096 Serpent > speed-scalar.out 2>&1",
+    "! grep -q \"don't know CPUID flag\" speed-scalar.out",
+    "grep -q 'Serpent \\[' speed-scalar.out",
+    "! grep -q 'Serpent \\[avx' speed-scalar.out",
   ]
 }
 
