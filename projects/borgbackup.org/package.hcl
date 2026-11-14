@@ -9,10 +9,10 @@ build {
     "python.org"  = "^3.10"
   }
   script = [
-    "bkpyvenv stage {{prefix}} {{version}}",
+    "zpkvenv stage {{prefix}} {{version}}",
     "$${{prefix}}/venv/bin/pip install -r requirements.d/development.txt",
     "$${{prefix}}/venv/bin/pip install .",
-    "bkpyvenv seal {{prefix}} borg borgfs",
+    "zpkvenv seal {{prefix}} borg borgfs",
   ]
 
   env {
