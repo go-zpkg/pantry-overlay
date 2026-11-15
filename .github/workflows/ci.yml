@@ -86,11 +86,33 @@ jobs:
       #
       # 196 → 195 with gnu.org/bash, the second.
       #
-      # --require-provenance is NOT here yet. 14 of 216 record none, and there
-      # is no ratchet for it, so turning it on would be the red light this
-      # avoids. It belongs here once those 14 are written or once it has a
-      # ceiling of its own.
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
           --require-standalone --max-fragments 195
+
+      # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
+      # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
+      # there is no ratchet for it, so turning it on would be the red light this
+      # avoids. It belongs here once those 14 are written OR ONCE IT HAS A
+      # CEILING OF ITS OWN."
+      #
+      # It has one now. The two ways out were never equal: writing the fourteen
+      # means reading fourteen projects' build systems — kernel.org/linux and
+      # github.com/ggml-org/llama.cpp among them — so that is a campaign, and
+      # while it ran NOTHING protected the 208 recipes that already record
+      # provenance. A recipe landing without one was invisible.
+      #
+      # 14 of 222 measured on 2026-11-15 at 097fc86, by the `@main` this step
+      # runs AND by the released binary — the same answer from both, so the
+      # number is not an artefact of which build asked. 216 → 222 since the
+      # comment was written and the fourteen did not move, which is exactly the
+      # hole: six recipes arrived and none of them had to say anything.
+      #
+      # ⛔ SO COMPLETING A PROVENANCE MEANS EDITING THIS NUMBER TOO, and the
+      # ratchet refuses a stale ceiling as firmly as a regression: at 13 with 14
+      # unrecorded the lane is red, and at 15 it is red for being out of date.
+      - name: no recipe lands without saying which files its build came from
+        run: >
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
+          --require-provenance --max-no-provenance 14
