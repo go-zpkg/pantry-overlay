@@ -131,10 +131,24 @@ jobs:
       #
       # 196 → 195 with gnu.org/bash, the second.
       #
+      # 195 → 194 with gnu.org/make, the third, and the second written from a
+      # project's own files rather than completed from what was already there
+      # (gnu.org/m4 was the first of those, and it ADDED a recipe, so it moved
+      # the total and not this number — the same way zlib.net, tukaani.org/xz
+      # and lz4.org did).
+      #
+      # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
+      # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
+      # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
+      # projects the overlay does NOT CARRY AT ALL — 59 of 70 still to do.
+      # Writing one of those 45 adds a standalone recipe, which moves the total
+      # and leaves this ceiling where it was. So the ceiling measures one of the
+      # two kinds of work and the issue tracks both.
+      #
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 195
+          --require-standalone --max-fragments 194
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
