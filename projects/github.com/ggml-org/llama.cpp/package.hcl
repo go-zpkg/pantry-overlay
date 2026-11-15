@@ -140,6 +140,77 @@ test {
   ]
 }
 
+provenance {
+  read = [
+    "CMakeLists.txt",      # :145 LLAMA_OPENSSL default ON; :141 + :98-102 LLAMA_TOOLS_INSTALL; :132-135 the BUILD_* defaults; :197 the deprecated LLAMA_CURL
+    "ggml/CMakeLists.txt", # :105-110 GGML_NATIVE_DEFAULT, :123 the option itself
+    "common/http.h",       # the project's own HTTP client, which is why openssl is a dependency rather than curl
+  ]
+
+  note = <<EOT
+Re-read at v1.0.0 — the tag this recipe now resolves to, not the v0.8.0 it was
+written against. Every claim the comments above make is confirmed, with two
+corrections and one that turns out stronger than stated.
+
+⭐ GGML_NATIVE=OFF IS LOAD-BEARING, AND UPSTREAM AGREES WITH THE REASON.
+`ggml/CMakeLists.txt:105-110`:
+
+    if (CMAKE_CROSSCOMPILING OR DEFINED ENV{SOURCE_DATE_EPOCH})
+        set(GGML_NATIVE_DEFAULT OFF)
+    else()
+        set(GGML_NATIVE_DEFAULT ON)
+
+So upstream already turns `-march=native` off for a reproducible build — it
+names `SOURCE_DATE_EPOCH`, the reproducible-builds convention, as the trigger.
+⛔ And our factory does NOT put that variable in a build's environment:
+`cmd/zpkb/factory.go:34` pins `defaultEpoch` only for `factoryTime()`, the
+attestation timestamp, and nothing calls `os.Setenv` for it. Therefore
+`GGML_NATIVE_DEFAULT` is ON for our builds and this one flag is the only thing
+standing between a published artifact and the CI runner's instruction set.
+Checked from both sides rather than argued.
+
+⚠ ONE LINE OF DRIFT, corrected: the comment above says `llama_option_depr`
+sits at CMakeLists line 196. At v1.0.0 it is **:197**. The claim itself holds —
+`llama_option_depr(WARNING LLAMA_CURL)` with no replacement — so
+`-DLLAMA_CURL=OFF` would still do nothing at all.
+
+⭐ AND THE LLAMA_TOOLS_INSTALL ARGUMENT IS BETTER THAN IT CLAIMS. The comment
+says the flag "changes nothing TODAY" and is stated in case upstream flips the
+default. Upstream ALREADY varies it: `:98-102` sets
+`LLAMA_TOOLS_INSTALL_DEFAULT` to OFF on iOS and to `$${LLAMA_STANDALONE}`
+otherwise. So the default is not a single value, it is a per-platform
+decision — which makes stating the flag a defence against a real mechanism
+rather than a hypothetical one.
+
+Which of the eight `LLAMA_*` flags are departures and which restate a default,
+from `:132-135` where all four take `$${LLAMA_STANDALONE}` (ON for a top-level
+build like ours):
+
+| flag | upstream default here | this recipe |
+|---|---|---|
+| LLAMA_BUILD_TESTS | ON | OFF — a departure |
+| LLAMA_BUILD_EXAMPLES | ON | OFF — a departure |
+| LLAMA_BUILD_TOOLS | ON | ON — restated |
+| LLAMA_BUILD_SERVER | ON | ON — restated |
+| LLAMA_OPENSSL (`:145`) | ON | ON — restated, deliberately |
+
+⭐ THE `versions` DECISION RE-MEASURED, because the condition its comment
+anticipated has now occurred. That comment says an `ignore` belongs here "if
+upstream ever tags something that DOES parse as a version but is not a
+release". Since it was written, `v1.0.0-b12359-b1b770d` has appeared — a semver
+PRERELEASE. Run today with the builder's own resolver
+(`zpkb versions --recipe`): 13 versions, newest 1.0.0 from `v1.0.0`, and the
+prerelease is NOT among them. The semver parse still drops it, so the decision
+to carry no `ignore` stands — now verified against the very tag shape that
+would have broken it, rather than against the three schemes that existed in
+November.
+
+The dependency on `openssl.org` is the project's own doing: `common/http.h` is
+llama.cpp's HTTP client (10 489 bytes at this tag), not libcurl, and
+`LLAMA_OPENSSL` at `:145` is what gives it https.
+EOT
+}
+
 versions {
   github = "ggml-org/llama.cpp/tags"
   strip  = "/^v/"
