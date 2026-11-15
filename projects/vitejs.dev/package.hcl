@@ -6,6 +6,11 @@
 #   npm install . --global --prefix=/pkgx/vitejs.dev/v8.3.5+brewing
 #   node: error while loading shared libraries: libcrypto.so.1.1
 #
+# (Those two lines are quoted verbatim from that day's log. The staging suffix
+# is `+builddir` since zpkb v0.80.0 and the store is `/zpkg`; neither changes
+# what was measured, and rewriting a log quote would make it describe a
+# command nobody ran.)
+#
 # vite 8's own package.json says `engines.node: ^20.19.0 || >=22.12.0`, so the
 # `^16 || ^18` half was wrong for this version regardless; `>=22.12` is the
 # half that vite accepts AND this registry can satisfy (nodejs.org 26.8.1, on

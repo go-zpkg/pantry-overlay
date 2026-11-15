@@ -12,13 +12,13 @@
 #
 # A SET IS UNORDERED, and that is deliberate rather than a limitation. Nix,
 # Guix and Spack manifests are all unordered; the order comes out of
-# concretisation, not out of the file. `bk closure` resolves this set to the
+# concretisation, not out of the file. `zpkb closure` resolves this set to the
 # same 41 projects as naming its 25 members by hand — verified — differing
 # only in sequence, which the topological walk decides.
 #
 # Which is why seed/order.txt must NOT become a set. That file is a BUILD
 # ORDER: inside a dependency cycle the topological order is a guess, and
-# order.txt is the hand-tuned guess that works. `bk closure --check-order`
+# order.txt is the hand-tuned guess that works. `zpkb closure --check-order`
 # exists to judge it. A set cannot carry that, and pretending otherwise would
 # throw away the tuning the sovereign generation depends on.
 #

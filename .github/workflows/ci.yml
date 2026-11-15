@@ -61,14 +61,31 @@ jobs:
       #
       # @main makes this repository's gates depend on a cache nobody here
       # controls, and the house rule is that every tool is under semver. A tag
-      # also makes the two ratchet numbers below MEAN something: "195 fragments
-      # and 7 without provenance, as judged by zpkb v0.78.0". Under @main the
+      # also makes the ratchet number below MEAN something: "195 fragments, as
+      # judged by zpkb v0.79.0". Under @main the
       # same numbers were a claim about whatever the proxy served that minute,
       # so a count that moved because the JUDGE changed was indistinguishable
       # from one that moved because a recipe did.
       #
       # Bumping the pin is therefore a deliberate act, and the right one when a
       # newer zpkb reads recipes better. It is not a chore to automate away.
+      #
+      # ⛔ WHICH IS WHY IT IS STILL v0.79.0 ON 2026-11-15, with v0.80.0 released.
+      # That tag renames the staging suffix `+brewing` → `+builddir`; it changes
+      # nothing `lint` judges. Measured before deciding, all four gates against
+      # this tree with a v0.80.0 binary: `--require-provenance` 0 over 222,
+      # `--require-hcl` 0, `--render-scripts` 0, `--require-standalone
+      # --max-fragments 195` exactly at the ceiling — the same four verdicts as
+      # v0.79.0. A bump that moves no number would be the chore this note warns
+      # against, and it would reset the sentence above to a tag nobody chose for
+      # a reason.
+      #
+      # Also corrected here: that sentence used to say "195 fragments and 7
+      # without provenance, as judged by zpkb v0.78.0" — three facts in one
+      # clause, and every one of them had moved. The provenance ceiling is gone
+      # (#109: the gate is at zero with no ceiling at all) and the judge is
+      # v0.79.0. One version carrying two facts is wrong the moment either of
+      # them moves.
       #
       # ⛔ AND ALL THE STEPS CARRY THE SAME TAG, ON PURPOSE. v0.77.0 → v0.78.0
       # for --require-hcl, then → v0.79.0 for --render-scripts. Leaving the
