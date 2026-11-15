@@ -153,6 +153,13 @@ jobs:
       # man/*.1 AGREED at 108 each and was worthless, because both are man-page
       # sets and coreutils ships pages for programs it does not install.
       #
+      # 190 → 189 with gnu.org/binutils, the eighth — and the first where
+      # `provides` COULD NOT BE A FLAT LIST. The top-level configure.ac:1103-1132
+      # drops `ld gas gdb gprof` for every darwin target, with no --enable to
+      # put them back, so the recipe keys `provides` by platform: 12 commands on
+      # darwin, 16 on linux. Written on one platform alone it would have been
+      # wrong on the other and nothing in the build would have said so.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -164,7 +171,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 190
+          --require-standalone --max-fragments 189
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
