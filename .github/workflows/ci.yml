@@ -153,13 +153,6 @@ jobs:
       # file before being transcribed, and one was wrong (define_libcxx_sub
       # begins at :265, not :272).
       #
-      # ⛔ SO COMPLETING A PROVENANCE MEANS EDITING THIS NUMBER TOO, and the
-      # ratchet refuses a stale ceiling as firmly as a regression: at 3 with 4
-      # unrecorded the lane is red, and at 5 it is red for being out of date.
-      # This number was 14 when the step was written and is 4 now, because ten
-      # provenances were written; each edit of it is the one moment anybody is
-      # looking.
-      #
       # ⭐ 7 → 4 with github.com/containers/crun, github.com/linux-rdma/
       # rdma-core and openucx.org, and the last of those found a defect that
       # had nothing to do with provenance: two of its test assertions were
@@ -167,13 +160,42 @@ jobs:
       # test block. Reading a recipe closely enough to say where its build came
       # from is what found it.
       #
-      # The four that remain are the large ones — ROCR-Runtime, llama.cpp,
-      # heimdal and kernel.org/linux — and each needs its project's own build
-      # system read rather than skimmed.
+      # ⭐⭐ AND 4 → 0, SO THE CEILING IS GONE. github.com/heimdal/heimdal,
+      # github.com/ROCm/ROCR-Runtime, kernel.org/linux and
+      # github.com/ggml-org/llama.cpp — the four large ones, each read in its
+      # own build system rather than skimmed. `--require-provenance` now stands
+      # with NO --max-no-provenance at all, which is the stricter reading and
+      # the flag's own default: every one of the 222 recipes records which of
+      # its project's files its build came from.
+      #
+      # ⛔ WHAT THE READING FOUND, because none of it was the point and all of
+      # it is why the field exists:
+      #   - heimdal: two of ten options are NOT in configure.ac at all
+      #     (openssl, berkeley-db live in cf/crypto.m4 and cf/db.m4), and the
+      #     ncurses shim is justified by ONE line, configure.ac:453, which
+      #     looks for tgetent in termcap/ncurses/curses — never ncursesw.
+      #   - ROCR-Runtime: upstream's signal.h:74 promises "Allow hsa_signal_t
+      #     to be keys in STL structures" and supplies only a std::less
+      #     specialisation; the patch adds the free operator< the comment
+      #     implies. IMAGE_SUPPORT=OFF is a real departure (default ON on x86);
+      #     BUILD_SHARED_LIBS=ON only restates a default.
+      #   - kernel.org/linux: RDMA_RXE depends on INFINIBAND_VIRT_DMA, which
+      #     this recipe never names and does not need to (def_bool !HIGHMEM) —
+      #     and the test's `grep -q "^CONFIG_RDMA_RXE=y"` is what would catch
+      #     it if that ever changed. The `=y` in every assertion matters:
+      #     INFINIBAND_USER_ACCESS is a TRISTATE.
+      #   - llama.cpp: ggml turns -march=native off by itself when
+      #     SOURCE_DATE_EPOCH is set, and our factory does NOT put that
+      #     variable in a build's environment — so GGML_NATIVE=OFF is the only
+      #     thing between an artifact and the runner's instruction set.
+      #
+      # ⛔ A REGRESSION IS NOW A HARD FAILURE, which is the point of reaching
+      # zero: the next recipe that lands without provenance turns this step red
+      # with no number to adjust and no slack to hide in.
       - name: no recipe lands without saying which files its build came from
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-provenance --max-no-provenance 4
+          --require-provenance
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
       # The decision is the owner's, 2026-11-15: "nous n'avons plus besoin YAML,

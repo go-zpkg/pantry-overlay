@@ -84,6 +84,56 @@ distributable {
   url = "https://cdn.kernel.org/pub/linux/kernel/v{{version.major}}.x/linux-{{version}}.tar.xz"
 }
 
+provenance {
+  read = [
+    "scripts/config",                        # the project's OWN config editor, which the second script step drives
+    "drivers/infiniband/Kconfig",            # :28-30 INFINIBAND_USER_ACCESS is TRISTATE; :60-62 ADDR_TRANS; :77-78 INFINIBAND_VIRT_DMA = def_bool !HIGHMEM
+    "drivers/infiniband/sw/rxe/Kconfig",     # :2-5 RDMA_RXE, and the dependency this recipe never names
+  ]
+
+  note = <<EOT
+Read at v6.12 of the kernel's own tree. Two of the test's `grep -q` lines turn
+out to be load-bearing, and the Kconfig files are what show it.
+
+⛔ RDMA_RXE HAS A DEPENDENCY THIS RECIPE DOES NOT NAME, and that is correct
+rather than an oversight. `drivers/infiniband/sw/rxe/Kconfig:4-5`:
+
+    depends on INET && PCI && INFINIBAND
+    depends on INFINIBAND_VIRT_DMA
+
+`INFINIBAND_VIRT_DMA` is never passed to `./scripts/config` above, and it does
+not have to be: `drivers/infiniband/Kconfig:77-78` declares it
+`def_bool !HIGHMEM`, so it is automatically y on the two platforms this recipe
+builds for. ⭐ But Kconfig DROPS a symbol whose dependencies are unmet, in
+silence, during `make olddefconfig` — so if that ever changed, `--enable
+RDMA_RXE` would quietly become nothing. The test's
+`grep -q "^CONFIG_RDMA_RXE=y"` is exactly what catches that, which is why it
+earns its line.
+
+⭐ AND THE `=y` IN EVERY ASSERTION IS THE POINT, not a habit.
+`drivers/infiniband/Kconfig:28` declares `INFINIBAND_USER_ACCESS` as a
+**tristate**, so it can legitimately be `m`. The comment above says "All =y,
+because MODULES is disabled below: a microVM kernel that needed a modules tree
+beside it would not be one artefact any more" — and the assertions enforce it:
+`grep -q "^CONFIG_INFINIBAND_USER_ACCESS=y"` fails on `=m`. A test written with
+`grep -q CONFIG_INFINIBAND_USER_ACCESS` would have passed a kernel whose
+drivers live in a tree nobody shipped.
+
+⚠ WORTH KNOWING AND NOT OBVIOUS FROM `provides`: on linux/x86-64 the file
+installed at `boot/Image` is a **bzImage**. `KERNEL_IMAGE_PATH` is
+`arch/x86/boot/bzImage` there and `arch/arm64/boot/Image` on aarch64, and both
+are copied to the same destination name so that one consumer path works for
+both. A bootloader that cares which format it is handed must look at the
+platform, not the filename.
+
+What this provenance does NOT cover, stated so it is not mistaken for
+complete: the other thirty-odd config symbols, each declared in its own
+Kconfig; the `HOSTCFLAGS` warning suppressions, which are about the HOST
+compiler rather than the kernel; and `$ZBK_CC_FREESTANDING`, which is ours and
+not the project's.
+EOT
+}
+
 test {
   script = <<EOT
 test -s {{prefix}}/boot/Image
