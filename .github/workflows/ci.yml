@@ -130,19 +130,29 @@ jobs:
       # which is exactly the hole this closes: six recipes arrived and none of
       # them had to say anything.
       #
-      # ⭐ 14 → 10 in the same pull request, by writing the provenance of the
-      # four `github.com/go-authn/*` recipes — the four projects here that are
-      # OURS, so their own files could be read at the exact tags the recipes
-      # build. That reading found the kind of thing the field exists for: all
-      # four commented "go.mod says go 1.27.1" while all four modules state
-      # `go 1.27.3` at those tags.
+      # ⭐ 14 → 10 in the pull request that added this step, by writing the
+      # provenance of the four `github.com/go-authn/*` recipes — the four
+      # projects here that are OURS, so their own files could be read at the
+      # exact tags the recipes build. That reading found the kind of thing the
+      # field exists for: all four commented "go.mod says go 1.27.1" while all
+      # four modules state `go 1.27.3` at those tags.
+      #
+      # ⭐ 10 → 7 with the last three `package.yml` in this tree becoming HCL —
+      # compiler-rt.llvm.org/wasi, libcxx.llvm.org/wasi and
+      # github.com/WebAssembly/wasi-libc. The overlay is now 222 HCL recipes and
+      # ZERO yaml. Their prose already cited wasi-sdk's wasi-sdk-sysroot.cmake
+      # by function and line range; every citation was confirmed against the
+      # file before being transcribed, and one was wrong (define_libcxx_sub
+      # begins at :265, not :272).
       #
       # ⛔ SO COMPLETING A PROVENANCE MEANS EDITING THIS NUMBER TOO, and the
-      # ratchet refuses a stale ceiling as firmly as a regression: at 9 with 10
-      # unrecorded the lane is red, and at 11 it is red for being out of date.
-      # This number was 14 three commits ago; it is 10 because four provenances
-      # were written, and that edit is the one moment anybody is looking.
+      # ratchet refuses a stale ceiling as firmly as a regression: at 6 with 7
+      # unrecorded the lane is red, and at 8 it is red for being out of date.
+      # This number was 14 when the step was written and is 7 now, because
+      # seven provenances were written; each edit of it is the one moment
+      # anybody is looking. The seven that remain are all other people's
+      # projects.
       - name: no recipe lands without saying which files its build came from
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.77.0 lint --dir .
-          --require-provenance --max-no-provenance 10
+          --require-provenance --max-no-provenance 7
