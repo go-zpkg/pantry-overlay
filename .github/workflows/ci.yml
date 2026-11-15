@@ -153,16 +153,26 @@ jobs:
       # begins at :265, not :272).
       #
       # ⛔ SO COMPLETING A PROVENANCE MEANS EDITING THIS NUMBER TOO, and the
-      # ratchet refuses a stale ceiling as firmly as a regression: at 6 with 7
-      # unrecorded the lane is red, and at 8 it is red for being out of date.
-      # This number was 14 when the step was written and is 7 now, because
-      # seven provenances were written; each edit of it is the one moment
-      # anybody is looking. The seven that remain are all other people's
-      # projects.
+      # ratchet refuses a stale ceiling as firmly as a regression: at 3 with 4
+      # unrecorded the lane is red, and at 5 it is red for being out of date.
+      # This number was 14 when the step was written and is 4 now, because ten
+      # provenances were written; each edit of it is the one moment anybody is
+      # looking.
+      #
+      # ⭐ 7 → 4 with github.com/containers/crun, github.com/linux-rdma/
+      # rdma-core and openucx.org, and the last of those found a defect that
+      # had nothing to do with provenance: two of its test assertions were
+      # one-key MAPS rather than commands, and buildscript refused the WHOLE
+      # test block. Reading a recipe closely enough to say where its build came
+      # from is what found it.
+      #
+      # The four that remain are the large ones — ROCR-Runtime, llama.cpp,
+      # heimdal and kernel.org/linux — and each needs its project's own build
+      # system read rather than skimmed.
       - name: no recipe lands without saying which files its build came from
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.78.0 lint --dir .
-          --require-provenance --max-no-provenance 7
+          --require-provenance --max-no-provenance 4
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
       # The decision is the owner's, 2026-11-15: "nous n'avons plus besoin YAML,
