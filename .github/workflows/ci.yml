@@ -70,14 +70,15 @@ jobs:
       # Bumping the pin is therefore a deliberate act, and the right one when a
       # newer zpkb reads recipes better. It is not a chore to automate away.
       #
-      # ⛔ AND ALL FOUR STEPS CARRY THE SAME TAG, ON PURPOSE. v0.77.0 → v0.78.0
-      # here because the fourth step below needs --require-hcl, which v0.77.0
-      # does not have. Leaving the first three on the older tag would work and
-      # would be worse: this lane would then report numbers from TWO judges, and
-      # "as judged by zpkb vX" — the whole reason the pin exists — would stop
-      # being a single sentence anyone can check.
+      # ⛔ AND ALL THE STEPS CARRY THE SAME TAG, ON PURPOSE. v0.77.0 → v0.78.0
+      # for --require-hcl, then → v0.79.0 for --render-scripts. Leaving the
+      # earlier steps on an older tag would work and would be worse: this lane
+      # would then report numbers from TWO judges, and "as judged by zpkb vX" —
+      # the whole reason the pin exists — would stop being a single sentence
+      # anyone can check. Each bump is one edit of one string, which is the
+      # cheapest part of adding a step.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.78.0 lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
@@ -115,7 +116,7 @@ jobs:
       #
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.78.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
           --require-standalone --max-fragments 195
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
@@ -171,7 +172,7 @@ jobs:
       # system read rather than skimmed.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.78.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
           --require-provenance --max-no-provenance 4
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
@@ -195,5 +196,30 @@ jobs:
       # with an unread yaml next to it (go-zpkg/zpkb#477).
       - name: our own recipes are HCL, and nothing may add a yaml back
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.78.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
           --require-hcl
+
+      # ⛔⛔ A RECIPE CAN PARSE AND STILL DESCRIBE NO STEP, and this tree proved
+      # it. Until #107, openucx.org carried two `test` entries that were one-key
+      # MAPS rather than strings — what the yaml line
+      # `- ucx_info -d | grep -q "Transport: posix"` decodes to, since the `: `
+      # inside the quotes splits the item at `"Transport` / `posix"`. The HCL
+      # conversion carried that faithfully, so it predated the conversion.
+      #
+      # buildscript.scriptItem found no `run`, renderRun(nil) hit its default
+      # arm, and the ENTIRE test block was unrenderable: `zpkb test
+      # openucx.org` could not run. Every step above was GREEN throughout,
+      # because parsing a recipe and rendering its script are different
+      # questions and none of them asked the second.
+      #
+      # The judge is the builder's own buildscript.Generate, not a rule here
+      # about what a script may contain: a second statement of the schema would
+      # disagree with the first one eventually, and then the lane and the build
+      # would disagree too.
+      #
+      # ⭐ A/B measured with this flag over this tree, same 222 recipes:
+      # 1 refusal at 760df17, 0 after the repair. One instance, so no ceiling.
+      - name: every script a recipe states can actually be rendered
+        run: >
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+          --render-scripts
