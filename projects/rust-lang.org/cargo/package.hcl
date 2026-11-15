@@ -70,11 +70,11 @@ set -eu
 # drifting apart.
 #
 # It replaces `case "$(uname -s)-$(uname -m)"`, which spawned two
-# processes to learn something bk had already resolved.
+# processes to learn something zpkb had already resolved.
 #
-# It is NOT a cross-build fix, and saying so would be false: bk's
-# Target.Triple is the triple of the machine bk RUNS on for every
-# non-windows target — `BREWKIT_TARGET=linux/s390x bk target` on a Mac
+# It is NOT a cross-build fix, and saying so would be false: zpkb's
+# Target.Triple is the triple of the machine zpkb RUNS on for every
+# non-windows target — `ZPKB_TARGET=linux/s390x zpkb target` on a Mac
 # prints aarch64-apple-darwin — so this is right here only because the
 # factory builds each platform natively or under emulation, where the
 # two coincide. A genuine cross build would need Target.Triple fixed
