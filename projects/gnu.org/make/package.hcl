@@ -223,6 +223,29 @@ What was tried, and what each attempt answered:
      "Note: Specified keyrings are ignored due to option use-keyboxd", then
      "error reading key: No public key". A second implementation could not read
      it either, on this host, for an unrelated reason.
+  4. ⛔ SETTLED, by importing the whole keyring into a throwaway GNUPGHOME —
+     which gpg CAN do, slowly, where its `--keyring` flag is ignored. The
+     keyring holds exactly ONE Paul D. Smith key:
+
+       pub rsa4096 2016-10-22 [SC] 6D4EEB02AD834703510B117680CB727A20C79BB2
+       uid Paul D. Smith <paul@mad-scientist.net>
+       uid Paul D. Smith <psmith@gnu.org>
+       sub rsa4096 2016-10-22 [E]  C97BE9DA95DD78299B30F4C2609DAAD35F61D607
+
+     and `B2508A90102F8AE3B12A0090DEACCAAEDB78137A` appears NOWHERE in the
+     listing — not as a primary key, not as a subkey. So the answer is not
+     "beyond the unreadable entity", which is what gnu.org/sed's recipe
+     demonstrates is possible (its key was found after 326 of the same 402):
+     this key is absent from this keyring, and no amount of reading further
+     would have produced it.
+
+⛔⛔ AND STEP 4 NEARLY WENT THE OTHER WAY, which is the part worth keeping.
+`gpg --list-keys B2508A90102F8AE3B12A0090DEACCAAEDB78137A` against that import
+exited **0** and printed a Paul D. Smith key — the WRONG one,
+`6D4EEB02…20C79BB2`. Exit zero, the right name, a fingerprint nobody compared:
+that is a "verified" claim available for the taking. Only printing the
+fingerprint and reading it caught it. Whatever gpg matched on, it was not the
+40 hex digits it was given.
 
 ⛔ AND THE FINGERPRINT THE SIGNATURE CARRIES IS NOT AN INDEPENDENT STATEMENT.
 It is the signature naming the key it was made with, which is circular as
@@ -237,5 +260,13 @@ So the digest stands on our own fetch plus the announcement's MD5, and the
 signature is RECORDED rather than CHECKED. That is weaker than gnu.org/m4 and
 stronger than silence, and it is the recipe's state rather than a gap in the
 effort.
+
+⭐ WHAT WOULD FINISH IT, stated so the next reader does not repeat the four
+steps: a per-key published source for `B2508A90…137A` — the maintainer's own
+page, the project's git repository, or a GNU keyring copy that carries it. Not
+a keyserver: this project never asks one, because an unknown key fetched and
+accepted degrades "verified" to "somebody signed it". Until then this recipe's
+digest is pinned and its signature is on the record unverified, which is a
+state anybody can check rather than a claim they have to trust.
 EOT
 }
