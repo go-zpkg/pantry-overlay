@@ -160,6 +160,15 @@ jobs:
       # darwin, 16 on linux. Written on one platform alone it would have been
       # wrong on the other and nothing in the build would have said so.
       #
+      # 189 → 188 with github.com/westes/flex, the ninth — and the first where
+      # the recipe was ELEVEN RELEASES BEHIND and structurally unable to move:
+      # upstream's url spells v2.6.4 with no `{{version}}` in it while its
+      # versions source discovers 2.6.15. Also the first settled by BUILDING:
+      # three builds on darwin/arm64 gave the darwin FIXME its mechanism
+      # (shared libfl has an undefined-by-design yylex, which Mach-O refuses),
+      # showed `--enable-shared` to be a libtool default, and showed the
+      # `-D_GNU_SOURCE` workaround reaching the one target that already had it.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -171,7 +180,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 189
+          --require-standalone --max-fragments 188
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
