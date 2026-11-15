@@ -198,15 +198,19 @@ applies and is not mitigated here either: if `make` decides a shipped .info is
 older than make.texi it will call makeinfo, and the builder deliberately does
 NOT no-op MAKEINFO (build/build.go:758-763).
 
-⛔⛔ THE SIGNATURE IS NOT VERIFIED, AND THIS IS WHERE IT STOPPED.
+⛔⛔ THE SIGNATURE IS GOOD AND `sourcepin` STILL DECLINES IT: THE KEY HAS
+EXPIRED. This section said "NOT VERIFIED … key NOT OBTAINED" until
+2026-11-15 19:26, which was wrong, and the six steps below keep the whole
+reading because the error is more useful than the answer.
 
   signature    https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz.sig  (833 bytes)
   signed       2023-02-26, matching NEWS and the announcement
-  issuer       the signature names its own issuer fingerprint,
-               B2508A90102F8AE3B12A0090DEACCAAEDB78137A
-               (`gpg --list-packets`: "hashed subpkt 33 len 21 (issuer fpr v4
-               B2508A90102F8AE3B12A0090DEACCAAEDB78137A)")
-  key          NOT OBTAINED
+  issuer       B2508A90102F8AE3B12A0090DEACCAAEDB78137A — Paul D. Smith's
+               SIGNING SUBKEY, whose primary is 6D4EEB02AD834703510B117680CB727A20C79BB2
+  key          IN GNU's KEYRING, exportable, and EXPIRED
+  gpg says     "Good signature from Paul D. Smith <paul@mad-scientist.net>"
+               followed by "Note: This key has expired!"
+  sourcepin    refuses: "openpgp: key expired"
 
 What was tried, and what each attempt answered:
 
@@ -223,29 +227,55 @@ What was tried, and what each attempt answered:
      "Note: Specified keyrings are ignored due to option use-keyboxd", then
      "error reading key: No public key". A second implementation could not read
      it either, on this host, for an unrelated reason.
-  4. ⛔ SETTLED, by importing the whole keyring into a throwaway GNUPGHOME —
-     which gpg CAN do, slowly, where its `--keyring` flag is ignored. The
-     keyring holds exactly ONE Paul D. Smith key:
+  4. ⛔⛔ THE ANSWER THIS RECIPE FIRST GAVE HERE WAS WRONG, and the correction
+     is the most instructive thing in the file. It said: the keyring holds one
+     Paul D. Smith key, `B2508A90…137A` appears nowhere in its listing, so the
+     key is ABSENT. All three statements came from one reading of
+
+       gpg --list-keys --with-subkey-fingerprints "Paul D. Smith"
+
+     against the whole keyring imported into a throwaway GNUPGHOME, which
+     printed
 
        pub rsa4096 2016-10-22 [SC] 6D4EEB02AD834703510B117680CB727A20C79BB2
-       uid Paul D. Smith <paul@mad-scientist.net>
-       uid Paul D. Smith <psmith@gnu.org>
        sub rsa4096 2016-10-22 [E]  C97BE9DA95DD78299B30F4C2609DAAD35F61D607
 
-     and `B2508A90102F8AE3B12A0090DEACCAAEDB78137A` appears NOWHERE in the
-     listing — not as a primary key, not as a subkey. So the answer is not
-     "beyond the unreadable entity", which is what gnu.org/sed's recipe
-     demonstrates is possible (its key was found after 326 of the same 402):
-     this key is absent from this keyring, and no amount of reading further
-     would have produced it.
+     — one encryption subkey and no sign of `B2508A90…`. **That listing was
+     not a search result.** `B2508A90…137A` is Paul D. Smith's SIGNING SUBKEY
+     of exactly that primary key, and gpg omitted it because it has EXPIRED.
+     Reading "not shown" as "not there" is the whole of the error.
 
-⛔⛔ AND STEP 4 NEARLY WENT THE OTHER WAY, which is the part worth keeping.
-`gpg --list-keys B2508A90102F8AE3B12A0090DEACCAAEDB78137A` against that import
-exited **0** and printed a Paul D. Smith key — the WRONG one,
-`6D4EEB02…20C79BB2`. Exit zero, the right name, a fingerprint nobody compared:
-that is a "verified" claim available for the taking. Only printing the
-fingerprint and reading it caught it. Whatever gpg matched on, it was not the
-40 hex digits it was given.
+  5. ⭐ WHAT IS ACTUALLY TRUE, measured 2026-11-15 19:25. `gpg --export` on
+     that fingerprint produces 6 287 bytes, `sourcepin` accepts the file as
+     holding that exact key, and the refusal changes to the real reason:
+
+       openpgp: key expired
+
+     while gpg, given the same signature and tarball, says:
+
+       gpg: Good signature from "Paul D. Smith <paul@mad-scientist.net>"
+       gpg: Note: This key has expired!
+             6D4EEB02AD834703510B117680CB727A20C79BB2
+             B2508A90102F8AE3B12A0090DEACCAAEDB78137A
+
+     The two fingerprints on the last lines are the primary and the signing
+     subkey, which is the fact the first reading missed.
+
+     So the signature IS good, by a key in GNU's own keyring, under the
+     maintainer's identity. What stops `sourcepin` is EXPIRY — a statement
+     that the owner stopped vouching for the key after a date, not that the
+     bytes were signed by somebody else. The signature was made 2023-02-26.
+
+     ⛔ Unlike gnu.org/help2man's case (zpkb#482), the message here names the
+     right cause: "key expired" is accurate and actionable. The defect was in
+     the reading, not the tool.
+
+  6. And for comparison, the other branch of step 2's disjunction is real too:
+     gnu.org/coreutils' key sits BEYOND the 402 the Go reader manages, and
+     exporting that one key makes `sourcepin` verify it outright. So the
+     keyring yields three different outcomes — reachable (sed, gawk),
+     beyond the break but exportable (coreutils), and exportable but expired
+     (make).
 
 ⛔ AND THE FINGERPRINT THE SIGNATURE CARRIES IS NOT AN INDEPENDENT STATEMENT.
 It is the signature naming the key it was made with, which is circular as
@@ -256,17 +286,31 @@ read, not assumed (info-gnu 2023-02/msg00011). And a keyserver is not an answer
 here: this project never asks one, because an unknown key fetched and accepted
 degrades "verified" to "somebody signed it".
 
-So the digest stands on our own fetch plus the announcement's MD5, and the
-signature is RECORDED rather than CHECKED. That is weaker than gnu.org/m4 and
-stronger than silence, and it is the recipe's state rather than a gap in the
-effort.
+So the digest stands on:
 
-⭐ WHAT WOULD FINISH IT, stated so the next reader does not repeat the four
-steps: a per-key published source for `B2508A90…137A` — the maintainer's own
-page, the project's git repository, or a GNU keyring copy that carries it. Not
-a keyserver: this project never asks one, because an unknown key fetched and
-accepted degrades "verified" to "somebody signed it". Until then this recipe's
-digest is pinned and its signature is on the record unverified, which is a
-state anybody can check rather than a claim they have to trust.
+  - our own fetch-and-hash;
+  - the announcement's MD5, from a different host (weak algorithm, same
+    organisation);
+  - and a signature that is GOOD by the maintainer's key in GNU's keyring,
+    which `sourcepin` declines because that key has expired.
+
+That is weaker than gnu.org/sed's (independent fingerprint, live key) and
+stronger than what this recipe claimed until now. The chain is checkable at
+every link; what it does not have is a key its owner still vouches for.
+
+⭐ WHAT WOULD FINISH IT: a current signature, or a per-key published source
+naming `B2508A90…137A` as the right key for this release — the maintainer's
+own page, the project's git repository. Not a keyserver: this project never
+asks one, because an unknown key fetched and accepted degrades "verified" to
+"somebody signed it".
+
+⛔⛔ AND THE LESSON THIS FILE NOW CARRIES IS ABOUT READING, NOT ABOUT KEYS. I
+had four measurements, each one real, and assembled them into a false
+conclusion — "the key is absent" — because the fourth was a LISTING and I used
+it as a SEARCH. An expired subkey is not printed; "not printed" is not "not
+present"; and the sentence I wrote was checkable by anybody with the keyring
+and one `gpg --export`. The instrument that finally separated the cases is the
+one that compares the forty hex digits and says which of three things went
+wrong: no such key, key expired, or signature not by it.
 EOT
 }
