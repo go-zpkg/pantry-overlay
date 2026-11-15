@@ -49,8 +49,28 @@ jobs:
       # rather than on a recipe, and no recipe in this repository has been read
       # by the loader the builder uses since. A gate that fails for a reason of
       # its own is not a gate; it is a red light nobody reads.
+      #
+      # ⛔⛔ AND THAT IS WHY THESE THREE STEPS ARE PINNED TO A TAG RATHER THAN
+      # @main — MEASURED TODAY, not reasoned about. The provenance step below was
+      # added minutes after the flag it needs was merged into zpkb, and the lane
+      # went red with `flag provided but not defined: -max-no-provenance`:
+      # proxy.golang.org still resolved @main to
+      # v0.76.1-0.20261114072102-d2e01c8b0687, the revision from BEFORE the
+      # merge, while the repository's main was already at 614d1378. The tool was
+      # correct, the lane was red, and nothing in the lane could say which.
+      #
+      # @main makes this repository's gates depend on a cache nobody here
+      # controls, and the house rule is that every tool is under semver. A tag
+      # also makes the two ratchet numbers below MEAN something: "195 fragments
+      # and 14 without provenance, as judged by zpkb v0.77.0". Under @main the
+      # same numbers were a claim about whatever the proxy served that minute,
+      # so a count that moved because the JUDGE changed was indistinguishable
+      # from one that moved because a recipe did.
+      #
+      # Bumping the pin is therefore a deliberate act, and the right one when a
+      # newer zpkb reads recipes better. It is not a chore to automate away.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.77.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
@@ -88,7 +108,7 @@ jobs:
       #
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.77.0 lint --dir .
           --require-standalone --max-fragments 195
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
@@ -103,9 +123,10 @@ jobs:
       # while it ran NOTHING protected the 208 recipes that already record
       # provenance. A recipe landing without one was invisible.
       #
-      # 14 of 222 measured on 2026-11-15 at 097fc86, by the `@main` this step
-      # runs AND by the released binary — the same answer from both, so the
-      # number is not an artefact of which build asked. 216 → 222 since the
+      # 14 of 222 measured on 2026-11-15 at 097fc86, by the zpkb this step pins
+      # AND by the v0.76.0 binary installed on the author's machine — the same
+      # answer from both, so the number is not an artefact of which build
+      # asked. 216 → 222 since the
       # comment was written and the fourteen did not move, which is exactly the
       # hole: six recipes arrived and none of them had to say anything.
       #
@@ -114,5 +135,5 @@ jobs:
       # unrecorded the lane is red, and at 15 it is red for being out of date.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@main lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.77.0 lint --dir .
           --require-provenance --max-no-provenance 14
