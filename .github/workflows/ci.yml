@@ -169,6 +169,15 @@ jobs:
       # showed `--enable-shared` to be a libtool default, and showed the
       # `-D_GNU_SOURCE` workaround reaching the one target that already had it.
       #
+      # 188 → 187 with gnu.org/wget, the tenth — written under the owner's rule
+      # of 2026-11-15, « il faut eviter les trucs implicites ». wget states 22
+      # configure switches and TEN decide whether an external library is
+      # linked; upstream's recipe stated five, one of them MISSPELLED
+      # (`--without-libps1` for `--without-libpsl`), so configure printed
+      # "unrecognized options" on every build and libpsl was auto-detected.
+      # All ten are stated now, and `wget --version` prints the resulting
+      # feature set, so the test block asserts the choice flag by flag.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -180,7 +189,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 188
+          --require-standalone --max-fragments 187
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
