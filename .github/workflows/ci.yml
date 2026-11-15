@@ -144,6 +144,10 @@ jobs:
       # links libmpfr and libgmp when it finds them, declares neither, and
       # both are in the seed's own closure.
       #
+      # 192 → 191 with gnu.org/help2man, the sixth — the member the three
+      # before it had to prove they did not need, and the first whose
+      # signature our own sourcepin cannot verify (DSA/SHA-1; gpg can).
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -155,7 +159,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 192
+          --require-standalone --max-fragments 191
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
