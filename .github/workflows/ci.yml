@@ -137,6 +137,8 @@ jobs:
       # the total and not this number — the same way zlib.net, tukaani.org/xz
       # and lz4.org did).
       #
+      # 194 → 193 with gnu.org/sed, the fourth.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -148,7 +150,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 194
+          --require-standalone --max-fragments 193
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
