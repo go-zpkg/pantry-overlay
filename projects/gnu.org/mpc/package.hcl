@@ -140,17 +140,30 @@ build {
     # silently become libmpc's own flags, and a foreign gmp could hand mpc a
     # different compiler entirely.
     #
-    # ⚠ AND THE SANDBOX DOES NOT ALREADY PREVENT IT — measured, not assumed:
-    # `ZBK_CC` and `CC` appear nowhere in zpkb's sources outside its own tests,
-    # so nothing exports CC into a build and the macro really would run.
+    # ⚠ WHETHER THE SANDBOX ALREADY PREVENTS IT DEPENDS ON THE MODE, and the
+    # first version of this recipe got that wrong — see the correction on
+    # go-zpkg/pantry-overlay#136. zpkb's buildscript/wrapper.go:631 exports
+    # `CC="${CC:-clang <sovereign flags>}"`, but :628-629 states that this is
+    # "scoped to this mode: a global CC=clang was measured and rejected for
+    # ordinary builds". So:
     #
-    # Naming CC is enough: USER_CC becomes non-empty, the `&&` at :104 is false,
-    # and the extraction never happens. CFLAGS is then AC_PROG_CC's own `-g -O2`,
-    # which is deterministic. `cc` rather than `clang` follows the precedent
-    # already working in this tree — projects/ruby-lang.org/package.hcl:30 builds
-    # with `CC=cc`, and projects/gnu.org/mpfr/package.hcl:173 compiles its test
-    # with `cc` — and #127 established that what it resolves to here is clang.
-    CC = "cc"
+    #   sovereign/glibc mode   CC and CFLAGS are set   the extraction never runs
+    #   ordinary build         neither is set          the extraction DOES run
+    #
+    # ⛔ AND CC MUST NOT BE SET IN THIS BLOCK. wrapper.go:698-699 is explicit
+    # that "a recipe's env is emitted AFTER this preamble, so it overwrites the
+    # variable whole" — so `CC = "cc"` here would REPLACE the sovereign driver
+    # string with a bare `cc`. On linux that survives only because `cc` on PATH
+    # is zpkb's shim re-execing $ZPKB_CC (:683-688), and on darwin it does not
+    # survive at all: :724 says "On DARWIN there is no shim". It would also
+    # discard the reason :613-626 gives for putting the flags in $CC in the first
+    # place — libtool preserves $CC verbatim and does not pass a recipe's CFLAGS
+    # to its own link lines — and mpc IS a libtool package (configure.ac:116).
+    #
+    # The suppression therefore belongs on the configure line as
+    # `CC="$${CC:-cc}"` (see build.script): it keeps whatever the sandbox set and
+    # supplies `cc` only when nothing did, which is the one form that makes
+    # USER_CC non-empty in both modes without taking anything away in either.
 
     # ⛔ THE SWITCH CENSUS: EIGHT, and every single default is a fixed constant —
     # unset. There is no `[default=auto]` anywhere in mpc's configure.ac, which
@@ -206,7 +219,13 @@ build {
   }
 
   script = [
-    "./configure $ARGS",
+    # ⛔ `CC="$${CC:-cc}"` is the whole remedy for the finding in `note`, and the
+    # form matters. It makes USER_CC non-empty at configure.ac:31 — so :104's
+    # `&&` is false and MPC_GMP_CC_CFLAGS never reads gmp.h — while KEEPING the
+    # sovereign driver when zpkb set one, which an `env` entry would overwrite
+    # whole. `$${` rather than `${` because HCL would otherwise interpolate it:
+    # the same trap that broke #131 and then #133 one recipe later.
+    "CC=\"$${CC:-cc}\" ./configure $ARGS",
     "make --jobs {{ hw.concurrency }}",
     "make install",
   ]
@@ -355,9 +374,12 @@ provenance {
     # Read for the sibling levers and the licence contrasts this recipe draws.
     "go-zpkg/pantry-overlay projects/gnu.org/mpfr/package.hcl",
     "go-zpkg/pantry-overlay projects/gnu.org/gmp/package.hcl",
-    # Read to establish that nothing already sets CC in a build, and for the
-    # precedent that `cc` is the name that works here.
-    "go-zpkg/zpkb buildscript/buildscript_test.go:42,153",
+    # Read to establish WHEN the builder sets CC itself, which the first version
+    # of this recipe got wrong: :631 exports it, :628-629 scopes that to
+    # sovereign mode, :698-699 says a recipe's env overwrites the whole variable
+    # afterwards, :683-688 and :724 are the shim's presence on linux and absence
+    # on darwin, and :613-626 is why the flags live in $CC at all.
+    "go-zpkg/zpkb buildscript/wrapper.go:613-631,683-688,698-699,724",
     "go-zpkg/pantry-overlay projects/ruby-lang.org/package.hcl:30",
     # Read to check, rather than assume, that mpc.pc's Requires.private can be
     # satisfied.
@@ -390,12 +412,38 @@ built elsewhere would hand its flags — and, through `__GMP_CC`, possibly a
 different compiler — to libmpc, and nothing in the resulting artifact would say
 where either came from.
 
-⚠ AND THE SANDBOX DOES NOT ALREADY PREVENT THIS. Checked rather than assumed:
-`CC` appears in zpkb's Go sources only inside buildscript's own tests, and
-`ZBK_CC` and `ZBK_` appear nowhere in zpkb at all, so nothing exports a compiler
-into a build and the macro really would run. Setting CC in this recipe makes the
-`&&` at configure.ac:104 false and the extraction never happens; CFLAGS then
-comes from AC_PROG_CC's own `-g -O2`, which is the same on every builder.
+⛔⛔ AND THE FIRST VERSION OF THIS RECIPE GOT THE SECOND HALF WRONG — corrected
+here and in a comment on go-zpkg/pantry-overlay#136, because the error is a
+better lesson than the finding.
+
+It claimed "the sandbox does not already prevent this", on the evidence that `CC`
+occurs in zpkb's Go sources only inside buildscript's own tests. That evidence
+could not see what it was looking for: the builder exports CC from inside a
+SHELL LINE, `export CC="$${CC:-clang <flags>}"` at buildscript/wrapper.go:631, and
+a grep for the Go literal `"CC"` cannot match a `CC=` spelled inside a larger
+string. A search whose pattern cannot express its target returns zero, and zero
+was read as a negative.
+
+What is actually true is conditional, and both sides are in the builder's own
+words. wrapper.go:628-629: the CC export is "scoped to this mode: a global
+CC=clang was measured and rejected for ordinary builds".
+
+  sovereign/glibc mode   CC and CFLAGS are exported   the extraction never runs
+  ordinary build         neither is exported          the extraction DOES run
+
+So mpc's reach into gmp.h is real, but only for builds outside sovereign mode —
+narrower than first stated, and still worth closing.
+
+⛔ The remedy also had to change. `CC = "cc"` in `env` was wrong: wrapper.go:698-699
+says "a recipe's env is emitted AFTER this preamble, so it overwrites the
+variable whole", so it would have REPLACED the sovereign driver with a bare `cc`.
+On linux that survives only via the shim that re-execs $ZPKB_CC (:683-688); on
+darwin :724 says "there is no shim", so it would not survive at all. It would
+also undo the reason :613-626 gives for carrying the flags in $CC — libtool keeps
+$CC verbatim and ignores a recipe's CFLAGS on its own link lines, and mpc builds
+libmpc.la with libtool (configure.ac:116). The build script now prepends
+`CC="$${CC:-cc}"` instead, which makes USER_CC non-empty in both modes and takes
+nothing away in either.
 
 ⛔ A SECOND IMPLICIT INPUT, STATED THOUGH NOT ACTED ON: configure.ac:239-241
 reads the ENVIRONMENT VARIABLE `MPC_DEBUG` — not a switch, not in --help — and
