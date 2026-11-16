@@ -72,7 +72,14 @@ build {
 make olddefconfig
 EOT
     },
-    "make --jobs {{ hw.concurrency }} CC=\"$ZBK_CC_FREESTANDING\" $KERNEL_IMAGE",
+    # ⛔ ZPKB_, not ZBK_. The builder exports this at
+    # buildscript/wrapper.go:682 as `export ZPKB_CC_FREESTANDING="clang"`; the
+    # prefix went BK_ → ZBK_ (go-zpkg/pantry-overlay#97) → ZPKB_ with the
+    # repository's own rename, and this line was left on the middle spelling, so
+    # it expanded to nothing and passed `CC=""` on the make command line. #97's
+    # own description predicted exactly this: "a recipe switched ahead of it
+    # reads an UNSET variable, and for these two that is silent".
+    "make --jobs {{ hw.concurrency }} CC=\"$ZPKB_CC_FREESTANDING\" $KERNEL_IMAGE",
     "mkdir -p \"{{prefix}}/boot\" \"{{prefix}}/share/kernel\"",
     "cp \"$KERNEL_IMAGE_PATH\" \"{{prefix}}/boot/Image\"",
     "cp .config \"{{prefix}}/share/kernel/config\"",
@@ -129,8 +136,9 @@ platform, not the filename.
 What this provenance does NOT cover, stated so it is not mistaken for
 complete: the other thirty-odd config symbols, each declared in its own
 Kconfig; the `HOSTCFLAGS` warning suppressions, which are about the HOST
-compiler rather than the kernel; and `$ZBK_CC_FREESTANDING`, which is ours and
-not the project's.
+compiler rather than the kernel; and `$ZPKB_CC_FREESTANDING`, which is ours and
+not the project's (buildscript/wrapper.go:682, and :678-681 for why it must be
+passed on the make COMMAND LINE rather than through the environment).
 EOT
 }
 

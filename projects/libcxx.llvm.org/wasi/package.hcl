@@ -16,7 +16,7 @@
 # exceptions and without libunwind. A C++ project that throws needs the
 # exceptions flavour (wasi-sdk "DUAL": -fwasm-exceptions + libunwind), not built yet.
 #
-# Layout (so that zpkb's stencil can name it, wrapper.go ZBK_WASI_CXX):
+# Layout (so that zpkb's stencil can name it, wrapper.go:840 ZPKB_WASI_CXX):
 #   include/wasm32-wasip1/c++/v1   headers incl. __config_site
 #   lib/wasm32-wasip1/libc++.a libc++abi.a
 
@@ -169,7 +169,7 @@ Where the reading shows in the result, rather than being decorative:
   - `-DLIBCXX_LIBDIR_SUFFIX=/wasm32-wasip1` and
     `-DCMAKE_INSTALL_INCLUDEDIR=include/wasm32-wasip1` are what make the layout
     at the top of this file true, and zpkb's stencil names those paths
-    (wrapper.go, ZBK_WASI_CXX): the two have to agree or a C++ wasip1 build
+    (wrapper.go:840, ZPKB_WASI_CXX): the two have to agree or a C++ wasip1 build
     finds no headers.
 EOT
 }
