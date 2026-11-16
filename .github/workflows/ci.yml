@@ -61,8 +61,8 @@ jobs:
       #
       # @main makes this repository's gates depend on a cache nobody here
       # controls, and the house rule is that every tool is under semver. A tag
-      # also makes the ratchet number below MEAN something: "195 fragments, as
-      # judged by zpkb v0.79.0". Under @main the
+      # also makes the ratchet number below MEAN something: "186 fragments, as
+      # judged by zpkb v0.82.0". Under @main the
       # same numbers were a claim about whatever the proxy served that minute,
       # so a count that moved because the JUDGE changed was indistinguishable
       # from one that moved because a recipe did.
@@ -70,32 +70,41 @@ jobs:
       # Bumping the pin is therefore a deliberate act, and the right one when a
       # newer zpkb reads recipes better. It is not a chore to automate away.
       #
-      # ⛔ WHICH IS WHY IT IS STILL v0.79.0 ON 2026-11-15, with v0.80.0 released.
-      # That tag renames the staging suffix `+brewing` → `+builddir`; it changes
-      # nothing `lint` judges. Measured before deciding, all four gates against
-      # this tree with a v0.80.0 binary: `--require-provenance` 0 over 222,
-      # `--require-hcl` 0, `--render-scripts` 0, `--require-standalone
-      # --max-fragments 195` exactly at the ceiling — the same four verdicts as
-      # v0.79.0. A bump that moves no number would be the chore this note warns
-      # against, and it would reset the sentence above to a tag nobody chose for
-      # a reason.
+      # ⛔ IT SAT AT v0.79.0 THROUGH v0.80.0 AND v0.81.0, FOR THE REASON ABOVE.
+      # v0.80.0 renamed the staging suffix `+brewing` → `+builddir` and v0.81.0
+      # added a version-scoped dependency; neither changes anything `lint`
+      # judges. Measured before declining each time — all four gates against this
+      # tree with a v0.80.0 binary gave the same four verdicts as v0.79.0 — and a
+      # bump that moves no number is the chore this note warns against.
+      #
+      # ⭐ IT MOVES TO v0.82.0 ON 2026-11-16 BECAUSE A STEP NEEDS IT: that tag
+      # adds `--require-known-env`, the last step below, which no earlier judge
+      # has. That is the "deliberate act" this note asks for rather than a
+      # refresh.
+      #
+      # Measured before bumping, all six gates against this tree with v0.82.0:
+      # plain 0, `--require-standalone --max-fragments 186` exactly at the
+      # ceiling, `--require-provenance` 0, `--require-hcl` 0, `--render-scripts`
+      # 0 — the same five verdicts as v0.79.0, so the bump moves no number of its
+      # own — and `--require-known-env` 0 over 233 recipes.
       #
       # Also corrected here: that sentence used to say "195 fragments and 7
       # without provenance, as judged by zpkb v0.78.0" — three facts in one
       # clause, and every one of them had moved. The provenance ceiling is gone
       # (#109: the gate is at zero with no ceiling at all) and the judge is
-      # v0.79.0. One version carrying two facts is wrong the moment either of
+      # v0.82.0. One version carrying two facts is wrong the moment either of
       # them moves.
       #
       # ⛔ AND ALL THE STEPS CARRY THE SAME TAG, ON PURPOSE. v0.77.0 → v0.78.0
-      # for --require-hcl, then → v0.79.0 for --render-scripts. Leaving the
+      # for --require-hcl, → v0.79.0 for --render-scripts, → v0.82.0 for
+      # --require-known-env. Leaving the
       # earlier steps on an older tag would work and would be worse: this lane
       # would then report numbers from TWO judges, and "as judged by zpkb vX" —
       # the whole reason the pin exists — would stop being a single sentence
       # anyone can check. Each bump is one edit of one string, which is the
       # cheapest part of adding a step.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
@@ -197,7 +206,7 @@ jobs:
       #
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
           --require-standalone --max-fragments 186
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
@@ -275,7 +284,7 @@ jobs:
       # with no number to adjust and no slack to hide in.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
           --require-provenance
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
@@ -299,7 +308,7 @@ jobs:
       # with an unread yaml next to it (go-zpkg/zpkb#477).
       - name: our own recipes are HCL, and nothing may add a yaml back
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
           --require-hcl
 
       # ⛔⛔ A RECIPE CAN PARSE AND STILL DESCRIBE NO STEP, and this tree proved
@@ -324,5 +333,42 @@ jobs:
       # 1 refusal at 760df17, 0 after the repair. One instance, so no ceiling.
       - name: every script a recipe states can actually be rendered
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
           --render-scripts
+
+      # ⛔⛔ FOUR RECIPES OF THIS TREE SHIPPED READING A BUILD VARIABLE THE
+      # BUILDER DOES NOT EXPORT, across THREE sweeps that each believed they were
+      # the last (go-zpkg/zpkb#494):
+      #
+      #   kernel.org/linux:75   $ZBK_CC_FREESTANDING   is ZPKB_CC_FREESTANDING
+      #   unbound.net:17        $PKGX_DIR              is ZPKG_DIR
+      #   llvm.org:184          $PKGX_DIR              is ZPKG_DIR
+      #   rust-lang.org/cargo   BREWKIT_TARGET         is ZPKB_TARGET
+      #
+      # A shell expands an unset variable to the EMPTY STRING and exits 0, so
+      # every one of them is silent: no build fails and no test looks. The worst
+      # was not a dropped flag — unbound's `sed -i -e "s|$PKGX_DIR/|…|g"` ran as
+      # `s|/|…|g`, replacing every slash in an installed script, and the next line
+      # deleted the .bak that would have shown it. The kernel's passed `CC=""` on
+      # a make command line, which beats kbuild's own assignment.
+      #
+      # ⛔ AND #97, WHICH MOVED TWO OF THESE RECIPES TO THE MIDDLE SPELLING OF
+      # THE PREFIX, PREDICTED IT: "a recipe switched ahead of it reads an UNSET
+      # variable, and for these two that is silent". It was right, and it happened
+      # again to one of the two, because the prefix it moved them TO was renamed
+      # afterwards. Three sweeps of prose did not close this class; this step is
+      # the reason a fourth will not be needed.
+      #
+      # The judge is the builder's own exporter, not a list here: zpkb derives the
+      # valid names by RENDERING buildscript.Wrap/WrapTest across every mode
+      # (ExportedNames) and adds build.PassThroughEnv. A list in this file would
+      # have been a fifth copy of information that had already drifted four times.
+      #
+      # ⭐ SHOWN RED BEFORE BEING BELIEVED, which is what a new check's zero
+      # requires: with this flag over this tree, exit 1 at d8ea26b naming
+      # `kernel.org/linux: build: $ZBK_CC_FREESTANDING`, and exit 0 at afade87
+      # once #138 fixed it. One instance, so no ceiling.
+      - name: no recipe reads a build variable the builder does not export
+        run: >
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          --require-known-env
