@@ -178,6 +178,15 @@ jobs:
       # All ten are stated now, and `wget --version` prints the resulting
       # feature set, so the test block asserts the choice flag by flag.
       #
+      # 187 → 186 with freetype.org, the eleventh and the first CMake project:
+      # the owner's « rien d'implicite » reads as `option()` and
+      # `cmake_dependent_option()` there, where a `FT_DISABLE_X` defaulting OFF
+      # is auto-detection spelled backwards. The fragment (#31) already carried
+      # four of the nine; the one that mattered was `FT_DISABLE_HVF`, new in
+      # this line, which auto-detects an APPLE SDK LIBRARY with no
+      # FT_REQUIRE_HVF to pin it — measured, the darwin dylib was carrying
+      # /usr/lib/libhvf.dylib.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -189,7 +198,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.79.0 lint --dir .
-          --require-standalone --max-fragments 187
+          --require-standalone --max-fragments 186
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
