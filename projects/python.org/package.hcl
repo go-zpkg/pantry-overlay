@@ -1,6 +1,6 @@
 # ⛔⛔ TWO MISTYPED-IDENTIFIER DEFECTS, both found by measuring rather than
 # reading, while establishing what the tcl-lang.org split would break
-# (go-zpkg/pantry-overlay#122). This fragment is not the standalone recipe —
+# (go-zpkg/recipes#122). This fragment is not the standalone recipe —
 # that is the next step, and it needs a factory build this session cannot run.
 # These two need no build at all.
 

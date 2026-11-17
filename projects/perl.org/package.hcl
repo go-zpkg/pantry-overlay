@@ -52,7 +52,7 @@ dependencies {
 # ⚠ `ignore` is carried in full — a scalar here, not a list — together with
 # `github`, because an overlay key replaces rather than extends.
 #
-# ⛔ THIRD INSTANCE OF ONE FAMILY IN TWO DAYS. go-zpkg/pantry-overlay#123 found
+# ⛔ THIRD INSTANCE OF ONE FAMILY IN TWO DAYS. go-zpkg/recipes#123 found
 # the same shape twice in python.org: `.x` as a glob idiom in a regex field,
 # and `^0\.` anchored without the `v` the raw tag carries. All three are a
 # pattern written for the tag shape the author had in mind, against a corpus

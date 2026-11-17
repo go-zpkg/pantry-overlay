@@ -1,16 +1,24 @@
-# pantry-overlay
+# recipes
 
 The recipes we own, consumed by
 [`go-zpkg/artifact`](https://github.com/go-zpkg/artifact) via
-`ZPKG_PANTRY_OVERLAY`. A recipe here wins over any same-named recipe in the
-pantry the factory is reading; what is absent here still falls back to that
-pantry, which is why this is called an overlay.
+`ZPKG_RECIPES_OVERLAY`. A recipe here wins over any same-named recipe in the
+pkgx pantry the factory is reading; what is absent here still falls back to that
+pantry.
 
-⛔ That fallback is the half that is going away: we are no longer compatible
-with pkgx and the sovereign pantry is being written
+⛔ That fallback is the half that is going away, and it is why this repository
+is no longer called `pantry-overlay`: we are no longer compatible with pkgx, the
+sovereign recipe set is being written
 ([packages#420](https://github.com/go-zpkg/packages/issues/420),
-[#431](https://github.com/go-zpkg/packages/issues/431)). These 213 recipes are
-the part that is already ours.
+[#431](https://github.com/go-zpkg/packages/issues/431)), and `pantry` was always
+pkgx's word rather than ours. `overlay` describes a relationship to an upstream
+that is being removed; `recipes` describes the contents, which stays true before
+and after. These 234 recipes are the part that is already ours.
+
+⚠ Two names deliberately keep the old word, because they name somebody else's
+thing: `PantryBase` (it *is* pkgx's pantry, compiled in) and the
+`ZPKG_RECIPES_OVERLAY` *overlay* mechanism itself, which exists only for as long
+as there is an upstream to sit over.
 
 Two purposes.
 

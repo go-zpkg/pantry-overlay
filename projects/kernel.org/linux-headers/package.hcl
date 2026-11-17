@@ -2,7 +2,7 @@
 # other libc compile against, and the floor a FROM-scratch tree stands on.
 #
 # ⛔ WRITTEN FROM THE KERNEL'S OWN FILES (go-zpkg/packages#431), at 7.2.15.
-# Named by go-zpkg/pantry-overlay#88 as one of the two that come before the rest
+# Named by go-zpkg/recipes#88 as one of the two that come before the rest
 # of the fourteen, because nothing else in the set can be built correctly
 # without it. Measured against this overlay alone on 2026-11-16 with
 # zpkb v0.81.0, the gap #88 opened at fourteen now stands at NINE:
@@ -60,7 +60,7 @@ platforms = ["linux"]
 # git.kernel.org/torvalds/t/ instead, which releases.json confirms by giving
 # mainline 7.4-rc3 a git.kernel.org source and every stable line a cdn one. A
 # filter written for tags would have been inert here, which is the shape
-# go-zpkg/pantry-overlay#123 and #125 each found twice.
+# go-zpkg/recipes#123 and #125 each found twice.
 #
 # ⚠ The `.tar.xz` in `match` is load-bearing: each version appears in the index
 # three times, as `.tar.gz`, `.tar.sign` and `.tar.xz`.
@@ -101,7 +101,7 @@ distributable {
   # left the recipe BROKEN for everyone else: `versions` resolves 1960 versions
   # across the three majors, so a consumer asking `*` gets the newest — 7.3.4 —
   # and an unpinned version is refused by design (`sha256` makes a recipe
-  # fail-closed, which is the structural answer go-zpkg/pantry-overlay#123
+  # fail-closed, which is the structural answer go-zpkg/recipes#123
   # reached). Measured, not assumed: `zpkb versions` lists 7.3.4 first and
   # 7.2.15 sixth. So the newest resolvable version is pinned as well as the one
   # the set asks for, and both are signature-verified below.

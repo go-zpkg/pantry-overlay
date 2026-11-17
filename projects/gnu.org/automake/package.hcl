@@ -1,9 +1,9 @@
 # gnu.org/automake — the Makefile.in generator, a base-toolchain member, and the
-# consumer of the autoconf written in go-zpkg/pantry-overlay#129.
+# consumer of the autoconf written in go-zpkg/recipes#129.
 #
 # ⛔ WRITTEN FROM AUTOMAKE'S OWN FILES (go-zpkg/packages#431), at 1.20, read out
 # of the release tarball. Fifth of today's five: #126, #127, #128 and #129 took
-# go-zpkg/pantry-overlay#88's measured gap from 9 to 5; this takes it to 4.
+# go-zpkg/recipes#88's measured gap from 9 to 5; this takes it to 4.
 #
 # ⭐⭐ AND IT IS THE RECIPE THAT SHOWS THE BAKED-PATH CLASS HAS A CLEAN SIDE.
 # #128 (bison) and #129 (autoconf) each bake another project's absolute store
@@ -192,7 +192,7 @@ provenance {
   ]
 
   note = <<EOT
-⛔⛔ THE SHEBANG PROBLEM IS WORSE HERE THAN IN go-zpkg/pantry-overlay#129, AND
+⛔⛔ THE SHEBANG PROBLEM IS WORSE HERE THAN IN go-zpkg/recipes#129, AND
 THAT IS MEASURED RATHER THAN ASSUMED.
 
 configure.ac:70 is `AC_PATH_PROG([PERL], [perl])`, which records an ABSOLUTE
@@ -225,7 +225,7 @@ the consequence is recorded here. Reported on go-zpkg/zpkb#397, where the remedy
 belongs — this is the second recipe to meet it and the first to show that the
 trampoline workaround is not general.
 
-⚠ THE KEY CORROBORATION IS WEAKER THAN go-zpkg/pantry-overlay#129'S, and the
+⚠ THE KEY CORROBORATION IS WEAKER THAN go-zpkg/recipes#129'S, and the
 difference is worth stating rather than glossing. Arch Linux's automake PKGBUILD
 does list this signer — `validpgpkeys=(… '6C222EA6B2BD216AA406516AC868F0B6DE38409D')
 # Kamila Szewczyk` — but its `source=` is
@@ -235,7 +235,7 @@ does list this signer — `validpgpkeys=(… '6C222EA6B2BD216AA406516AC868F0B6DE
 a signed GIT TAG, not this tarball, and it publishes `sha512sums` over that
 checkout rather than a digest of these bytes. So Arch corroborates the PERSON as
 an automake release key and says nothing about this artifact. That is exactly the
-trap go-zpkg/pantry-overlay#127 fell into with glibc, where two Arch-listed keys
+trap go-zpkg/recipes#127 fell into with glibc, where two Arch-listed keys
 verified tags and neither had signed the tarball. Here the same primary DID sign
 the tarball, so the chain holds — but with two paths to the digest, not #129's
 three.

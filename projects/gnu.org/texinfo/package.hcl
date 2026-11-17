@@ -3,7 +3,7 @@
 #
 # ⛔ WRITTEN FROM TEXINFO'S OWN FILES (go-zpkg/packages#431), at 7.3, read out of
 # the release tarball. Seventh of today's seven: #126, #127, #128, #129, #130
-# and #131 took go-zpkg/pantry-overlay#88's measured gap from 9 to 3; this takes
+# and #131 took go-zpkg/recipes#88's measured gap from 9 to 3; this takes
 # it to 2.
 #
 # ⭐ AND THE FIRST RECIPE TODAY WHOSE perl PIN IS NOT A JUDGEMENT CALL. zpkb
@@ -33,7 +33,7 @@ distributable {
   strip-components = 1
 
   # ⭐ THREE INDEPENDENT PATHS TO THIS DIGEST, the second recipe today to manage
-  # it (after go-zpkg/pantry-overlay#129):
+  # it (after go-zpkg/recipes#129):
   #
   #   1. zpkb sourcepin, the builder's own fetcher, signature VERIFIED:
   #        signed by EAF669B31E31E1DECBD11513DDBC579DAB37FBA9
@@ -69,7 +69,7 @@ distributable {
 # build broke." A recipe is data and cannot reference a Go constant; what keeps
 # this honest is that `CheckToolchainPerl` reads THIS FILE rather than a copy.
 #
-# ⭐ Contrast go-zpkg/pantry-overlay#115, which correctly gives help2man `^5` —
+# ⭐ Contrast go-zpkg/recipes#115, which correctly gives help2man `^5` —
 # it declares perl under `build.dependencies`, which `CheckToolchainPerl` does
 # not inspect, and with `--disable-nls` it ships no XS of its own. texinfo
 # cannot take that route: its perl is needed at RUN time.
@@ -117,7 +117,7 @@ build {
   # ncurses builds commonly provide `libtinfo` as well, so the answer depends on
   # what our ncurses package actually ships. Settling it needs a built tree;
   # it is the first thing to look at on the first real build, like
-  # `lib/libltdl.la` in go-zpkg/pantry-overlay#131.
+  # `lib/libltdl.la` in go-zpkg/recipes#131.
   env = {
     ARGS = [
       "--prefix={{prefix}}",
@@ -135,8 +135,8 @@ build {
       # configure.ac:301-302 is `AM_GNU_GETTEXT_VERSION([0.26])` +
       # `AM_GNU_GETTEXT([external])` — EXTERNAL, so with NLS on this package
       # would need gnu.org/gettext, which this tree does not yet carry (it is
-      # one of the two leaves go-zpkg/pantry-overlay#127 opened). Same decision
-      # and same reasoning as go-zpkg/pantry-overlay#115 for help2man.
+      # one of the two leaves go-zpkg/recipes#127 opened). Same decision
+      # and same reasoning as go-zpkg/recipes#115 for help2man.
       #
       # ⚠ COST, STATED: texinfo's own diagnostics are English-only in this
       # artifact.
@@ -246,7 +246,7 @@ provenance {
     # Read for the signing key AND for a third digest path; both are in the note.
     "archlinux/packaging/packages/texinfo PKGBUILD (validpgpkeys, pkgver, source, sha256sums)",
     # ⭐ Read BEFORE writing, and it changed the perl constraint — see the note.
-    "go-zpkg/pantry-overlay#115 (gnu.org/help2man) pull request body",
+    "go-zpkg/recipes#115 (gnu.org/help2man) pull request body",
     "go-zpkg/zpkb build/build.go:377-429 (ToolchainPerl and CheckToolchainPerl)",
   ]
 
@@ -254,7 +254,7 @@ provenance {
 ⭐⭐ PRIOR ART CHANGED THIS RECIPE BEFORE A LINE OF IT WAS WRITTEN, which is the
 whole argument for reading it first.
 
-go-zpkg/pantry-overlay#115 wrote gnu.org/help2man and recorded that BOTH of its
+go-zpkg/recipes#115 wrote gnu.org/help2man and recorded that BOTH of its
 declared dependencies were wrong — gettext was unnecessary with NLS off, and its
 perl pin was `~5.44` copied out of zpkb's `ToolchainPerl` where `^5` was the
 honest bound. Read naively, that is an argument for giving texinfo `^5` too.
@@ -307,7 +307,7 @@ the first real build, named rather than assumed.
     developer or platform-packaging switches whose defaults are fixed constants.
 
 ⚠ gnu.org/gettext is avoided by `--disable-nls` rather than declared. It is one
-of the two leaves go-zpkg/pantry-overlay#127 opened and is still absent from
+of the two leaves go-zpkg/recipes#127 opened and is still absent from
 this tree, so declaring it would have deepened that hole for the sake of
 translated diagnostics in a build tool.
 

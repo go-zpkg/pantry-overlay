@@ -4,13 +4,13 @@
 # ⛔ WRITTEN FROM GMP'S OWN FILES (go-zpkg/packages#431), at 6.3.0.
 #
 # ⭐ WHY THIS PROJECT NOW, when it is not a member of go-zpkg/base-toolchain.
-# go-zpkg/pantry-overlay#88's campaign is down to one unread member,
+# go-zpkg/recipes#88's campaign is down to one unread member,
 # `gnu.org/gcc/libstdcxx`, and that one is not recipe-shaped: libstdc++'s own
 # manual states "Building libstdc++ separately from the rest of GCC is not
 # supported", so it needs a `gnu.org/gcc`, which in turn needs gmp (>=4.2),
 # mpfr (>=2.4.0) and mpc (>=0.8.0) — none of them in this tree. gmp is the only
 # one of the four with no prerequisite but a C compiler, so it is where that
-# chain starts. Reported in full on go-zpkg/pantry-overlay#88.
+# chain starts. Reported in full on go-zpkg/recipes#88.
 
 summary = "GNU MP: arbitrary-precision arithmetic on integers, rationals and floats"
 
@@ -25,7 +25,7 @@ summary = "GNU MP: arbitrary-precision arithmetic on integers, rationals and flo
 #     * the GNU General Public License … version 2 … or any later
 #
 # So the recipient CHOOSES. That is a disjunction, unlike gnu.org/glibc
-# (go-zpkg/pantry-overlay#127), whose expression is an AND because the library
+# (go-zpkg/recipes#127), whose expression is an AND because the library
 # and nscd are under different terms simultaneously. Writing `AND` here would
 # overstate the obligation on every consumer.
 license = "LGPL-3.0-or-later OR GPL-2.0-or-later"
@@ -148,7 +148,7 @@ build {
     # and `fat_path` is assigned nowhere else. On aarch64 or s390x the flag is
     # therefore accepted by configure and acted on by NOTHING — a recipe flag
     # the project does not honour, which is go-zpkg/zpkb#486's subject and the
-    # same trap go-zpkg/pantry-overlay#131 declined with libtool's inert
+    # same trap go-zpkg/recipes#131 declined with libtool's inert
     # `--disable-ltdl-install`.
     #
     # So it is passed where it works and omitted where it would be theatre.
@@ -261,7 +261,7 @@ ftp.gnu.org/gnu/gnu-keyring.gpg, and reading it:
 dated 2023-07-30, seven months after that copy's expiry.
 
 ⚠ WHAT IS **NOT** CLAIMED, and the distinction matters because
-go-zpkg/pantry-overlay#131 could make it and this recipe cannot. For libtool
+go-zpkg/recipes#131 could make it and this recipe cannot. For libtool
 there were TWO copies of the key to compare, so "the governing self-signature
 had lapsed" was a measurement. Here there is ONE copy. A 2013 self-signature
 with a ten-year lifetime says nothing about whether Niels Möller extended it in
@@ -285,7 +285,7 @@ prevent.
 
 ⚠ One thing read in Arch's recipe and deliberately not copied: it applies a
 `gmp-gcc-15.patch` "Fix build with GCC 15". This tree's compiler is clang
-(go-zpkg/pantry-overlay#127 established that clang ≥ 18 is what the toolchain
+(go-zpkg/recipes#127 established that clang ≥ 18 is what the toolchain
 offers), so that patch addresses a compiler this build does not use — and
 go-zpkg/packages#431 forbids seeding from other distributions' packaging in any
 case.

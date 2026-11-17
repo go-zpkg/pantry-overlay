@@ -4,7 +4,7 @@
 # recipe of the sovereign pantry.
 #
 # ⭐ AND ITS INHERITED BUILD BLOCK TURNED OUT TO BE SOUND, which is worth saying
-# because the two before it were not. go-zpkg/pantry-overlay#85 recorded two
+# because the two before it were not. go-zpkg/recipes#85 recorded two
 # user-visible defects found in two inherited blocks and said a gate becomes
 # worth building at the third. Three suspicions were raised here and the source
 # cleared all three — see the notes in `build`. The hit rate is 2 of 3, not 3

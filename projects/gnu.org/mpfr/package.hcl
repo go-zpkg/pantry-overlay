@@ -4,12 +4,12 @@
 # ⛔ WRITTEN FROM MPFR'S OWN FILES (go-zpkg/packages#431), at 4.2.2.
 #
 # ⭐ IT CLOSES A SKIP THAT WAS ALREADY LIVE, which is worth saying because
-# go-zpkg/pantry-overlay#134's description got this wrong for gmp and had to be
+# go-zpkg/recipes#134's description got this wrong for gmp and had to be
 # corrected: `gnu.org/mpfr` is NOT reached through libstdcxx (that member is
 # unread, so its dependencies are never walked). It is reached through
 # `gnu.org/gawk`, a base-toolchain member, which declares it at
 # projects/gnu.org/gawk/package.hcl:99-100 — put there by
-# go-zpkg/pantry-overlay#114 because gawk "links libmpfr AND libgmp when it
+# go-zpkg/recipes#114 because gawk "links libmpfr AND libgmp when it
 # finds them, declares neither". So this closes one of the walk's 24 remaining
 # skips on its own account, and happens to also be step two of the libstdcxx
 # chain.
@@ -20,7 +20,7 @@ summary = "GNU MPFR: multiple-precision floating-point arithmetic with correct r
 # COPYING.LESSER is the LGPL version 3 text and src/mpfr.h:8-11 says "under the
 # terms of the GNU Lesser General Public License … either version 3 of the
 # License, or (at your option) any later version". Only one licence, so no
-# AND and no OR: contrast gnu.org/gmp (go-zpkg/pantry-overlay#134), which is
+# AND and no OR: contrast gnu.org/gmp (go-zpkg/recipes#134), which is
 # LGPLv3+ OR GPLv2+ at the recipient's choice.
 license = "LGPL-3.0-or-later"
 
@@ -58,7 +58,7 @@ distributable {
 # ⛔ libmpfr links libgmp, so gmp is a RUNTIME dependency and not merely a build
 # one. The floor is mpfr's own: its INSTALL and configure require GMP 5.0.0 or
 # later for the 4.2 series, and `gnu.org/gmp`
-# (go-zpkg/pantry-overlay#134) resolves 6.3.0.
+# (go-zpkg/recipes#134) resolves 6.3.0.
 dependencies = {
   "gnu.org/gmp" = ">=5"
 }
@@ -98,7 +98,7 @@ build {
       # Each adds conversion functions to and from `_Decimal64`/`_Decimal128`
       # and `_Float128`/`__float128` IF THE COMPILER SUPPORTS THEM. So the
       # exported symbol set of libmpfr is decided by the build compiler — which
-      # is worse than glibc's --enable-cet (go-zpkg/pantry-overlay#127), because
+      # is worse than glibc's --enable-cet (go-zpkg/recipes#127), because
       # that changed code generation while this changes the ABI consumers link
       # against. A consumer built against a libmpfr that had __float128 fails on
       # one that did not, and nothing in either artifact says why.
@@ -208,13 +208,13 @@ provenance {
     # Read for the key and for a possible third digest path; gave the first only.
     "archlinux/packaging/packages/mpfr PKGBUILD (validpgpkeys, source, sha512sums, b2sums)",
     # Read to place this recipe correctly in the walk, and it corrected the
-    # framing go-zpkg/pantry-overlay#134 used for gmp.
-    "go-zpkg/pantry-overlay projects/gnu.org/gawk/package.hcl:99-100",
+    # framing go-zpkg/recipes#134 used for gmp.
+    "go-zpkg/recipes projects/gnu.org/gawk/package.hcl:99-100",
   ]
 
   note = <<EOT
 ⭐ THE TRUST CHAIN IS THE STRONGER KIND, and the difference from gnu.org/gmp
-(go-zpkg/pantry-overlay#134) is worth recording because the two look alike from
+(go-zpkg/recipes#134) is worth recording because the two look alike from
 outside.
 
 For gmp the fingerprint was doubly published — by gmplib.org itself and by Arch

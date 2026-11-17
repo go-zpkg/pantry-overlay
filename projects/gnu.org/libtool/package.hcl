@@ -4,7 +4,7 @@
 #
 # ⛔ WRITTEN FROM LIBTOOL'S OWN FILES (go-zpkg/packages#431), at 2.6.2, read out
 # of the release tarball. Sixth of today's six: #126, #127, #128, #129 and #130
-# took go-zpkg/pantry-overlay#88's measured gap from 9 to 4; this takes it to 3.
+# took go-zpkg/recipes#88's measured gap from 9 to 4; this takes it to 3.
 #
 # ⭐⭐ AND IT STARTS FROM INVISIBLE PRIOR WORK, which `priorart` surfaced and
 # nothing else would have. go-zpkg/zpkb carries a PUSHED BRANCH WITH NO PULL
@@ -36,7 +36,7 @@ summary = "GNU Libtool: the libtool script, libtoolize and libltdl"
 # ⛔ READ FROM BOTH: COPYING is the GPL version 2 text, and libtoolize.in:10-13
 # is "either version 2 of the License, or (at your option) any later version".
 #
-# ⚠ NOT NARROWED FURTHER, per the discipline go-zpkg/pantry-overlay#127 set.
+# ⚠ NOT NARROWED FURTHER, per the discipline go-zpkg/recipes#127 set.
 # libtool is also known for a linking exception on the scripts it GENERATES, and
 # libltdl is usually LGPL — but neither file was opened for this recipe, and a
 # licence is not narrowed on files that were not read.
@@ -135,7 +135,7 @@ build {
     # another project's versioned store path — go-zpkg/zpkb#397's class — and in
     # the upstream bottle it was a path inside pkgxdev's CI workspace.
     #
-    # Pre-answering the cache is the same lever go-zpkg/pantry-overlay#128 and
+    # Pre-answering the cache is the same lever go-zpkg/recipes#128 and
     # #129 use for `ac_cv_path_M4`, and gnu.org/gzip before them for
     # `ac_cv_prog_LESS`. The values are the shapes configure itself would
     # produce, minus the directory: measured at configure:6852,
@@ -250,7 +250,7 @@ That key is held by TWO independent hosts, and they disagree:
   protonmail.com WKD, for the       self-sig 2021-09-23, NO expiry
   ileanadumi95@protonmail.com UID   -> sourcepin VERIFIES
 
-⛔⛔ AND THE POLARITY IS THE OPPOSITE OF go-zpkg/pantry-overlay#127'S, which is
+⛔⛔ AND THE POLARITY IS THE OPPOSITE OF go-zpkg/recipes#127'S, which is
 why "prefer the author's own copy" is NOT the rule it looked like there. For
 glibc, akhuettel.de served a self-signature dated the day before and the GNU
 keyring served a stale one; taking the author's copy was taking the NEWER
@@ -269,12 +269,12 @@ Dumitrescu's key (two independent hosts agree on that fingerprint, and the
 cryptography checks out), and NOT that the key was valid at signing time. The
 digest rests on the two independent hash paths — the builder's own fetcher and
 `curl --fail` + `shasum -a 256` — exactly as kernel.org/linux-headers
-(go-zpkg/pantry-overlay#126) rests on its two, there because our verifier cannot
+(go-zpkg/recipes#126) rests on its two, there because our verifier cannot
 read the chain and here because the chain itself has a hole.
 
 ⚠ No third-party fingerprint was available to break the tie: Arch's libtool
 PKGBUILD carries no `validpgpkeys` at all and builds from git, so unlike
-go-zpkg/pantry-overlay#128 and #129 there is no independent publisher pinning
+go-zpkg/recipes#128 and #129 there is no independent publisher pinning
 this artifact.
 
 ⭐ ONE CLEAN RESULT WORTH RECORDING BESIDE THE MESSY ONE: libtool gets the
@@ -286,7 +286,7 @@ autoconf/automake case RIGHT where it gets sed/grep wrong, in the same file —
     libtoolize.in:47  : $${SED="@SED@"}
 
 bare names for the first two, substituted absolute paths for the rest. That is
-the same distinction go-zpkg/pantry-overlay#130 found in automake's
+the same distinction go-zpkg/recipes#130 found in automake's
 `$${AUTOCONF-autoconf}`, four lines apart from its own counter-example. And
 there is no `@M4@` here at all — libtool does not invoke m4 at run time, so the
 third instance of #128's defect is not in this package.

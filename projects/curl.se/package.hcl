@@ -49,7 +49,7 @@ dependencies = {
   # ⛔ NOT WIDENED TO `^4`, DELIBERATELY. openssl.org resolves to 4.1.0 as its
   # newest, and curl states only a ≥ 3.0.0 floor, so `^4` would satisfy curl's
   # configure. But gnu.org/wget 1.25.0 FAILS to compile against OpenSSL 4.1.0
-  # (measured in go-zpkg/pantry-overlay#120: `src/openssl.c:230` calls
+  # (measured in go-zpkg/recipes#120: `src/openssl.c:230` calls
   # `SSLv3_client_method`, which OpenSSL 4 removed), so "the floor is met" is
   # not evidence that a major works. curl against OpenSSL 4 has not been
   # measured here, and an unmeasured widening in a TLS dependency is the last

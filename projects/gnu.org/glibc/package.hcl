@@ -1,8 +1,8 @@
 # gnu.org/glibc — the C library every other package links, and the last of the
-# two projects go-zpkg/pantry-overlay#88 puts on the floor of its campaign.
+# two projects go-zpkg/recipes#88 puts on the floor of its campaign.
 #
 # ⛔ WRITTEN FROM GLIBC'S OWN FILES (go-zpkg/packages#431), at 2.44, read out of
-# the release tarball rather than a mirror's branch. go-zpkg/pantry-overlay#126
+# the release tarball rather than a mirror's branch. go-zpkg/recipes#126
 # wrote the other one (kernel.org/linux-headers) and took the measured gap from
 # 9 to 8; this takes it to 7.
 #
@@ -110,7 +110,7 @@ build {
     # ⚠⚠ python.org IS NOT IN go-zpkg/base-toolchain — checked against its 25
     # members name by name. So glibc, a member of that set, needs a tool the
     # set does not carry, exactly as kernel.org/linux-headers needed rsync
-    # (go-zpkg/pantry-overlay#126). Reported on #88 rather than left for the
+    # (go-zpkg/recipes#126). Reported on #88 rather than left for the
     # first person to run the factory.
     "python.org" = ">=3.4"
 
@@ -131,7 +131,7 @@ build {
     "gnu.org/binutils" = ">=2.39"
 
     # ⛔⛔ AND THE HEADERS THE LIBC'S ABI IS CUT AGAINST — the reason
-    # go-zpkg/pantry-overlay#126 came first. See `--with-headers` below for why
+    # go-zpkg/recipes#126 came first. See `--with-headers` below for why
     # leaving this to the compiler's default is not an option.
     "kernel.org/linux-headers" = "*"
   }

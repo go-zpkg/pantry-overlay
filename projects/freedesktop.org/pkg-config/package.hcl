@@ -1,6 +1,6 @@
 # freedesktop.org/pkg-config — the compile/link-flag broker that ~100 recipes in
 # this tree invoke, and the second-to-last member of
-# go-zpkg/pantry-overlay#88's campaign.
+# go-zpkg/recipes#88's campaign.
 #
 # ⛔ WRITTEN FROM PKG-CONFIG'S OWN FILES (go-zpkg/packages#431), at 0.29.2.
 # Eighth of today's eight: #126 through #132 took #88's measured gap from 9 to 2;
@@ -116,7 +116,7 @@ build {
       # brittle: pkg.c:771-775 and :851-855 read
       # `PKG_CONFIG_SYSTEM_INCLUDE_PATH` / `PKG_CONFIG_SYSTEM_LIBRARY_PATH` from
       # the environment and fall back to the compiled-in value only when unset.
-      # Same shape as the `@M4@` default in go-zpkg/pantry-overlay#128.
+      # Same shape as the `@M4@` default in go-zpkg/recipes#128.
       "--with-system-include-path=",
       "--with-system-library-path=",
 
@@ -128,7 +128,7 @@ build {
       # static list: no recipe in this tree templates one, and
       # `build.ProvidedCommands` reduces by platform without expanding
       # moustache. Shipping a file this recipe cannot name is the same defect
-      # go-zpkg/pantry-overlay#130 avoided by writing automake's APIVERSION
+      # go-zpkg/recipes#130 avoided by writing automake's APIVERSION
       # names out in full — except a triplet cannot be written out in full,
       # because it is not one value.
       #
@@ -296,11 +296,11 @@ somewhere that is neither the signature nor the host serving it.
 checked, ABSENT among all 613 primary and 767 subkeys, since this is a
 freedesktop project rather than a GNU one — and this fleet asks no keyserver.
 So the digest rests on its two independent hash paths, as
-kernel.org/linux-headers (go-zpkg/pantry-overlay#126) and gnu.org/libtool
+kernel.org/linux-headers (go-zpkg/recipes#126) and gnu.org/libtool
 (#131) do, and what is claimed is identification rather than verification.
 
 ⚠ Arch publishes `md5sums` rather than sha256 for this package, so unlike
-go-zpkg/pantry-overlay#129 and #132 there is no third digest path either.
+go-zpkg/recipes#129 and #132 there is no third digest path either.
 
 ⛔ NOT BUILT. No session here can run the factory, so what is established is
 this recipe's INPUTS — all eight switches with every default stated and three of
