@@ -372,3 +372,41 @@ jobs:
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
           --require-known-env
+
+      # ⛔⛔ THIS REPOSITORY CALLED ITSELF `pantry-overlay` FOR A DAY AFTER IT WAS
+      # RENAMED, STARTING WITH THE FIRST LINE OF ITS OWN README — beside a
+      # sentence pointing consumers at `ZPKG_PANTRY_OVERLAY`, which zpkb v0.83.0
+      # does not ignore but REFUSES by name (config.CheckRetiredEnv). 72
+      # occurrences, every one a self-reference, fixed in #141.
+      #
+      # ⛔ A DEAD ADDRESS HERE DOES NOT 404, WHICH IS WHY NOTHING CAUGHT IT.
+      # GitHub redirects a renamed repository, so `go-zpkg/pantry-overlay#88`
+      # still resolves and `raw.githubusercontent.com/go-zpkg/pantry-overlay/…`
+      # answers 200 with ZERO redirection (measured 2026-11-16). It holds right
+      # up until somebody creates a repository of that name in this org, which
+      # would take every one of those addresses in silence.
+      #
+      # ⭐ IT STARTS AT ZERO AND SO NEEDS NO CEILING, unlike its neighbours
+      # above. The 72 were not a judgement call: they name a repository whose
+      # issue numbers survived the rename, so each one has exactly one right
+      # answer. README.md is the single --allow, because it is now the page that
+      # EXPLAINS the rename and must be able to spell the old name — the
+      # declared case for that flag, and it is counted and printed, never
+      # silent.
+      #
+      # ⛔ --ext hcl IS LOAD-BEARING, not decoration. The default set is
+      # documentation only, and 71 of the 72 were in `package.hcl` comments and
+      # provenance blocks: the default run reads 3 of 238 files here and calls
+      # the rest clean. staleref's own help says so and it fooled a reader who
+      # had read it, which is why fleettools now prints "N of M file(s) read"
+      # with a census of what it walked past.
+      #
+      # Pinned to v0.130.0, the release that exists. The report's context window
+      # cut mid-rune until fleettools#337, which is merged and unreleased — that
+      # costs nothing while this is green and makes the output hard to read on
+      # the day it fires, so the pin rises to the release carrying it.
+      - name: nothing still calls this repository pantry-overlay
+        run: >
+          go run github.com/go-fleettools/fleettools/cmd/staleref@v0.130.0
+          --old pantry-overlay --new recipes
+          --ext hcl --allow README.md .
