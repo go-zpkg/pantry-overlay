@@ -405,8 +405,22 @@ jobs:
       # cut mid-rune until fleettools#337, which is merged and unreleased — that
       # costs nothing while this is green and makes the output hard to read on
       # the day it fires, so the pin rises to the release carrying it.
+      # ⛔⛔ AND THIS FILE IS THE SECOND --allow, BECAUSE A CHECK FOR X CANNOT
+      # AVOID CONTAINING X. `--old pantry-overlay` is the step's own argument
+      # and `.yml` is in staleref's DEFAULT extension set, so the first version
+      # of this step failed on ITSELF: 5 UNSURE, every one of them this comment
+      # and that flag. staleref already records the same shape about its own
+      # source — run over cmd/staleref it reported 15 DOUBLED, every one a
+      # comment explaining the defect it checks for.
+      #
+      # ⚠ THE COST IS REAL AND IS NOT HIDDEN: this exempts the whole workflow
+      # file, so a dead address elsewhere in it would not be caught. It is the
+      # narrowest instrument the tool has (--allow is per file), the exemption
+      # is COUNTED and printed on every run, and the alternative — moving the
+      # invocation into a file the sweep does not read — would hide it instead
+      # of declaring it.
       - name: nothing still calls this repository pantry-overlay
         run: >
           go run github.com/go-fleettools/fleettools/cmd/staleref@v0.130.0
           --old pantry-overlay --new recipes
-          --ext hcl --allow README.md .
+          --ext hcl --allow README.md --allow .github/workflows/ci.yml .
