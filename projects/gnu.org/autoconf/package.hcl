@@ -3,8 +3,8 @@
 #
 # ⛔ WRITTEN FROM AUTOCONF'S OWN FILES (go-zpkg/packages#431), at 2.73, read out
 # of the release tarball. Fourth of today's four:
-# go-zpkg/pantry-overlay#126 (kernel.org/linux-headers), #127 (gnu.org/glibc)
-# and #128 (gnu.org/bison) took go-zpkg/pantry-overlay#88's measured gap from 9
+# go-zpkg/recipes#126 (kernel.org/linux-headers), #127 (gnu.org/glibc)
+# and #128 (gnu.org/bison) took go-zpkg/recipes#88's measured gap from 9
 # to 6; this takes it to 5.
 #
 # ⭐⭐ AND IT MAKES #128'S FINDING A CLASS RATHER THAN A ONE-OFF. bison compiles
@@ -112,7 +112,7 @@ build {
       "--prefix={{prefix}}",
     ]
 
-    # ⛔⛔ THE SAME DEFECT go-zpkg/pantry-overlay#128 FOUND IN BISON, from an
+    # ⛔⛔ THE SAME DEFECT go-zpkg/recipes#128 FOUND IN BISON, from an
     # independent copy of the same upstream macro. autoconf's m4/m4.m4:
     #
     #   :27   AC_PATH_PROGS_FEATURE_CHECK([M4], [m4 gm4 gnum4], …)
@@ -230,7 +230,7 @@ one digest instead of two:
 
 and the third is independent in the way that matters: Arch's `source=` names the
 SAME ftp tarball (not a git commit, which is what made its glibc keys answer the
-wrong question in go-zpkg/pantry-overlay#127), so its digest is a statement about
+wrong question in go-zpkg/recipes#127), so its digest is a statement about
 these exact bytes by someone who is not us and not ftp.gnu.org.
 
 The fingerprint likewise comes from Arch (`validpgpkeys=('82F854F3…6769AA64')  #

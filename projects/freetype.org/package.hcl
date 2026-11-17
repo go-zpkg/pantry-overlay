@@ -396,7 +396,7 @@ provenance {
     "https://keys.openpgp.org/vks/v1/by-fingerprint/E30674707856409FF1948010BE6C3AAC63AD8E3F",    # 404
     "pkgxdev/pantry projects/freetype.org/package.yml",    # the recipe this replaces, and its two FIXMEs
     "pkgxdev/pantry projects/harfbuzz.org/package.yml",    # :10 freetype.org: 2 — the cycle that forbids declaring harfbuzz here
-    "go-zpkg/pantry-overlay#31",                           # the fragment's own history: the consumer half of the brotli declaration
+    "go-zpkg/recipes#31",                           # the fragment's own history: the consumer half of the brotli declaration
     "gnu.org/wget/package.hcl",                            # the switch-census discipline, applied here to CMake options
   ]
 
@@ -405,7 +405,7 @@ Eleventh of the campaign (go-zpkg/packages#440) and the FIRST CMake project
 among them. `zpkb closure -build` puts freetype.org in the 70-project build
 closure of go-zpkg/base-toolchain.
 
-⭐ THE FRAGMENT WAS ALREADY THE BEST OF THE ELEVEN. go-zpkg/pantry-overlay#31
+⭐ THE FRAGMENT WAS ALREADY THE BEST OF THE ELEVEN. go-zpkg/recipes#31
 had added `github.com/google/brotli` and all four `-DFT_REQUIRE_*=TRUE` flags
 — the owner's « rien d'implicite » applied to CMake months before the rule was
 spoken. Everything it did is kept verbatim. What follows is what it did not

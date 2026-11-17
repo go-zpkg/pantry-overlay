@@ -107,7 +107,7 @@ jobs:
         run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
-      # DIFFERENT QUESTION FROM WHETHER IT PARSES. pantry-overlay#50 reduced
+      # DIFFERENT QUESTION FROM WHETHER IT PARSES. go-zpkg/recipes#50 reduced
       # all 183 entries to the keys they CHANGE, and that was right: artifact
       # merges this tree OVER PantryBase, so an omitted key is inherited and a
       # small curated tree can correct a stale constraint without forking 1700

@@ -90,7 +90,7 @@ build {
 # The library is the half other packages consume: `pkgx` itself links
 # `@rpath/tukaani.org/xz/v5/lib/liblzma.5.dylib` on darwin, which is how this
 # project came to be declared a runtime dependency of it at all
-# (go-zpkg/pantry-overlay#28). The shell wrappers xz installs — xzdiff, xzgrep,
+# (go-zpkg/recipes#28). The shell wrappers xz installs — xzdiff, xzgrep,
 # xzless, xzmore — are deliberately NOT listed: they are /bin/sh scripts, so
 # they do not run in an empty image (go-zpkg/zpkx#151), and naming them here
 # would promise something this artifact cannot keep everywhere.
@@ -183,7 +183,7 @@ provenance {
   consulted = [
     "homebrew-core Formula/x/xz.rb",
     "nixpkgs (for the GitHub-release-first source order)",
-    "go-zpkg/pantry-overlay#28 (our own: the darwin liblzma link)",
+    "go-zpkg/recipes#28 (our own: the darwin liblzma link)",
     "go-zpkg/zpkb#397 (our own: this project bakes its localedir)",
   ]
 

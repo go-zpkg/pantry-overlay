@@ -4,7 +4,7 @@
 # ⛔ WRITTEN FROM MPC'S OWN FILES (go-zpkg/packages#431), at 1.4.1.
 #
 # ⚠ THIS ONE MOVES NEITHER NUMBER, AND THAT IS MEASURED, not assumed. The
-# mistake go-zpkg/pantry-overlay#134 made for gmp was to check the members tally,
+# mistake go-zpkg/recipes#134 made for gmp was to check the members tally,
 # find it unchanged, and write "no number" about both. The walk prints two
 # things, so both were read:
 #
@@ -142,7 +142,7 @@ build {
     #
     # ⚠ WHETHER THE SANDBOX ALREADY PREVENTS IT DEPENDS ON THE MODE, and the
     # first version of this recipe got that wrong — see the correction on
-    # go-zpkg/pantry-overlay#136. zpkb's buildscript/wrapper.go:631 exports
+    # go-zpkg/recipes#136. zpkb's buildscript/wrapper.go:631 exports
     # `CC="${CC:-clang <sovereign flags>}"`, but :628-629 states that this is
     # "scoped to this mode: a global CC=clang was measured and rejected for
     # ordinary builds". So:
@@ -372,15 +372,15 @@ provenance {
     # and the digest, not the key.
     "archlinux/packaging/packages/mpc PKGBUILD (validpgpkeys, source, sha256sums)",
     # Read for the sibling levers and the licence contrasts this recipe draws.
-    "go-zpkg/pantry-overlay projects/gnu.org/mpfr/package.hcl",
-    "go-zpkg/pantry-overlay projects/gnu.org/gmp/package.hcl",
+    "go-zpkg/recipes projects/gnu.org/mpfr/package.hcl",
+    "go-zpkg/recipes projects/gnu.org/gmp/package.hcl",
     # Read to establish WHEN the builder sets CC itself, which the first version
     # of this recipe got wrong: :631 exports it, :628-629 scopes that to
     # sovereign mode, :698-699 says a recipe's env overwrites the whole variable
     # afterwards, :683-688 and :724 are the shim's presence on linux and absence
     # on darwin, and :613-626 is why the flags live in $CC at all.
     "go-zpkg/zpkb buildscript/wrapper.go:613-631,683-688,698-699,724",
-    "go-zpkg/pantry-overlay projects/ruby-lang.org/package.hcl:30",
+    "go-zpkg/recipes projects/ruby-lang.org/package.hcl:30",
     # Read to check, rather than assume, that mpc.pc's Requires.private can be
     # satisfied.
     "gmp-6.3.0 Makefile.am:121-122, mpfr-4.2.2 Makefile.am:43-44",
@@ -405,7 +405,7 @@ bin/info), or what it exports (mpfr's --enable-decimal-float and
 another package baked into its own header — one rung above everything on that
 ladder, because it is not a property of mpc's configuration at all.
 
-The chain makes it concrete rather than theoretical. go-zpkg/pantry-overlay#134
+The chain makes it concrete rather than theoretical. go-zpkg/recipes#134
 exists because gmp tunes itself to the build machine's exact CPU, and
 `__GMP_CFLAGS` is precisely the record of how that gmp was compiled. So a gmp
 built elsewhere would hand its flags — and, through `__GMP_CC`, possibly a
@@ -413,7 +413,7 @@ different compiler — to libmpc, and nothing in the resulting artifact would sa
 where either came from.
 
 ⛔⛔ AND THE FIRST VERSION OF THIS RECIPE GOT THE SECOND HALF WRONG — corrected
-here and in a comment on go-zpkg/pantry-overlay#136, because the error is a
+here and in a comment on go-zpkg/recipes#136, because the error is a
 better lesson than the finding.
 
 It claimed "the sandbox does not already prevent this", on the evidence that `CC`

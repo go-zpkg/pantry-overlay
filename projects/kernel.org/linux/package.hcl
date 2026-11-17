@@ -74,7 +74,7 @@ EOT
     },
     # ⛔ ZPKB_, not ZBK_. The builder exports this at
     # buildscript/wrapper.go:682 as `export ZPKB_CC_FREESTANDING="clang"`; the
-    # prefix went BK_ → ZBK_ (go-zpkg/pantry-overlay#97) → ZPKB_ with the
+    # prefix went BK_ → ZBK_ (go-zpkg/recipes#97) → ZPKB_ with the
     # repository's own rename, and this line was left on the middle spelling, so
     # it expanded to nothing and passed `CC=""` on the make command line. #97's
     # own description predicted exactly this: "a recipe switched ahead of it

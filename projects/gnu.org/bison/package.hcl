@@ -2,9 +2,9 @@
 # glibc's configure calls CRITICAL.
 #
 # ⛔ WRITTEN FROM BISON'S OWN FILES (go-zpkg/packages#431), at 3.8.2, read out of
-# the release tarball. Third of today's three: go-zpkg/pantry-overlay#126 wrote
+# the release tarball. Third of today's three: go-zpkg/recipes#126 wrote
 # kernel.org/linux-headers and #127 gnu.org/glibc, which together took
-# go-zpkg/pantry-overlay#88's measured gap from 9 to 7; this takes it to 6.
+# go-zpkg/recipes#88's measured gap from 9 to 7; this takes it to 6.
 #
 # ⭐ CHOSEN FOR A CONVERGENCE, not at random: #127 declares `gnu.org/bison` as
 # one of glibc's four CRITICAL build dependencies (glibc configure.ac:553-555,
@@ -172,7 +172,7 @@ build {
 # apply here, and that is a measured negative rather than an assumption.
 #
 # ⚠ TWO OTHER AC_PATH_PROG CALLS WERE CHECKED AND ARE HARMLESS, which is the
-# caution go-zpkg/pantry-overlay#93 earned — it is not enough to see the macro,
+# caution go-zpkg/recipes#93 earned — it is not enough to see the macro,
 # one has to follow where its value GOES:
 #
 #   configure.ac:272  AC_PATH_PROG([PERL], [perl])
