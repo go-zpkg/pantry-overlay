@@ -171,11 +171,11 @@ build {
 # `less`, `diff` and `cmp` — none of them declared, none of them present in an
 # empty image.
 #
-# ⭐ The four below are the compiled binaries, and #310 names them as the four
+# ⭐ The four below are the compiled binaries, which go-zpkg/packages#310 names as the four
 # that work. `bunzip2` and `bzcat` are not symlinks here: Makefile:79-80 is
 # `cp -f bzip2 …`, three COPIES of one program that reads argv[0].
 #
-# #310 left the choice open between declaring the tools, dropping the scripts
+# go-zpkg/packages#310 left the choice open between declaring the tools, dropping the scripts
 # from `provides`, and leaving it. This tree has since answered it three times
 # — tukaani.org/xz, openssl.org (#145), facebook.com/zstd (#146) — always by
 # keeping the files in the artifact and out of `provides`. This is the fourth,
@@ -279,8 +279,8 @@ this tree whose shape was decided by a LANE rather than by reading.
 go-zpkg/packages#310 ran the published bottle on a scratch rootfs and got
 `bzegrep: line 63: egrep: command not found` — a green build and a red test,
 because seven of eleven `provides` were shell scripts calling programs nothing
-declared. Four names here, the compiled binaries, which #310 names as the four
-that work.
+declared. Four names here, the compiled binaries, which go-zpkg/packages#310
+names as the four that work.
 
 ⛔⛔ THREE DEFECTS THAT WOULD NOT HAVE FAILED THE BUILD:
 
