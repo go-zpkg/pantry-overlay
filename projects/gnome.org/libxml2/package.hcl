@@ -89,24 +89,29 @@ build {
     ARGS = [
       "--prefix={{prefix}}",
 
-      # ⛔⛔ `--without-python` IS NOT OPTIONAL, AND THE HELP TEXT UNDERSTATES IT.
-      # configure.ac:97-98 documents `--with-python` as "(on)", and the only
-      # place that turns it off is the `--with-minimum` branch (:223, :239) —
-      # so a plain `./configure` has it ON.
+      # ⛔⛔ NAMED BECAUSE THE HELP TEXT IS WRONG — NOT BECAUSE THE DEFAULT IS
+      # ON. configure.ac:97-98 documents `--with-python` as "(on)" and that line
+      # is STALE: the bindings became off-by-default in 2.15.
       #
-      # Two consequences, both from the file:
-      #   :579-582  AM_PATH_PYTHON and PKG_CHECK_MODULES([PYTHON], …) — it needs
-      #             a Python AND its pkg-config file;
-      #   :589-593  `if test "$with_python" = "yes" || test "$with_docs" = "yes"`
-      #             then AC_PATH_PROG(DOXYGEN) and, failing that,
+      # The generated script, which is the artifact that runs, settles it.
+      # `configure:14421-14423` is the two-argument AC_ARG_WITH form, so
+      # `with_python` is assigned ONLY when the flag is passed; the script's one
+      # textual assignment to it, `configure:14642`, sits inside the
+      # `--with-minimum` branch. A plain `./configure` therefore leaves it
+      # EMPTY, and both consumers test for "yes":
+      #   :15354 / configure.ac:579-582  AM_PATH_PYTHON + PKG_CHECK_MODULES
+      #   :15832 / configure.ac:589-593  `test "$with_python" = "yes" ||
+      #             test "$with_docs" = "yes"` → AC_PATH_PROG(DOXYGEN) →
       #             AC_MSG_ERROR([cannot find doxygen]).
+      # Both are reachable through a FLAG and never by default.
       #
-      # ⛔ So the DEFAULT configuration of a C library REFUSES TO CONFIGURE
-      # unless doxygen is installed. Not a warning, not a skipped target — an
-      # AC_MSG_ERROR. And python.org is itself one of the twenty-two
-      # (go-zpkg/recipes#143), so accepting the default would make this recipe
-      # depend on a project that has no recipe, raising the closure's skip count
-      # instead of lowering it.
+      # ⛔ So what this flag defends against is the documentation, and the
+      # pantry. pkgxdev/pantry's recipe passes `--with-python` deliberately and
+      # consequently build-depends on `doxygen.nl` and `python.org >=3<3.12`,
+      # and sets a runtime PYTHONPATH. python.org is one of the twenty-two
+      # (go-zpkg/recipes#143): taking that path would RAISE this closure's skip
+      # count instead of lowering it. Named explicitly rather than left to a
+      # help string that already disagrees with its own code.
       "--without-python",
 
       # (off) by default already (:73-74), named because it is the OTHER half of
@@ -184,11 +189,14 @@ fi
 EOT
     },
 
-    # ⛔⛔ THE REGRESSION TEST FOR `--without-python`. If that flag is ever
-    # dropped, configure starts requiring doxygen and a Python with its .pc —
-    # and on a machine that has both, the build SUCCEEDS and silently ships
-    # Python bindings plus a dependency on a project that has no recipe. Asserted
-    # on the installed tree: no python module directory may appear under lib.
+    # ⛔⛔ THE REGRESSION TEST FOR `--without-python`, AND IT GUARDS A FLIP
+    # RATHER THAN A REMOVAL. Dropping the flag today changes nothing: the
+    # default is already off. What it catches is the day configure.ac:97-98
+    # stops being stale, or the day someone "aligns" this recipe with the
+    # pantry, which passes `--with-python`. Either way the build SUCCEEDS on a
+    # machine carrying doxygen and a Python with its .pc, and silently ships
+    # bindings plus a dependency on a project that has no recipe. Asserted on
+    # the installed tree: no python module directory may appear under lib.
     {
       run = <<EOT
 if ls -d "{{prefix}}"/lib/python* >/dev/null 2>&1; then
@@ -231,30 +239,46 @@ EOT
 provenance {
   read = [
     "Copyright",      # the MIT text, and the note that dict.c/list.c differ in HOLDER rather than licence
-    "configure.ac",   # :67-134 the thirty-three AC_ARG_WITH and their stated defaults; :83-84 iconv (on); :85-86 icu (off); :97-98 python (ON); :125-126 zlib (OFF); :213-221 --with-history FORCES readline on; :223-249 the --with-minimum branch, the only place python is turned off; :579-582 python needs AM_PATH_PYTHON and its .pc; :589-593 python or docs makes doxygen MANDATORY, AC_MSG_ERROR otherwise
+    "configure.ac",   # :67-134 the thirty-three AC_ARG_WITH and their stated defaults; :83-84 iconv (on); :85-86 icu (off); :97-98 python documented "(on)" and STALE; :125-126 zlib (OFF); :213-221 --with-history FORCES readline on; :223-255 the --with-minimum branch; :579-582 python needs AM_PATH_PYTHON and its .pc; :589-593 python or docs makes doxygen MANDATORY, AC_MSG_ERROR otherwise
+    "configure",      # the GENERATED script, read because the .ac help text disagreed with it: :14421-14423 the two-arg AC_ARG_WITH form (with_python set only when the flag is passed), :14642 its one assignment, inside --with-minimum; :15354 and :15832 the two consumers, both testing for "yes"
     "Makefile.am",    # :33 bin_PROGRAMS = xmllint; :35 bin_SCRIPTS = xml2-config; :51-53 xmlcatalog under WITH_CATALOG_SOURCES and WITH_OUTPUT_SOURCES
     "xml2-config.in", # :1 #! /bin/sh — why it is not in `provides`
   ]
 
-  consulted = []
+  consulted = [
+    "pkgxdev/pantry projects/gnome.org/libxml2/package.yml", # read AFTER writing this recipe, to settle the python default; it is why the correction below exists
+  ]
 
   note = <<EOT
-⭐⭐ THE DEFAULT CONFIGURATION OF THIS C LIBRARY REFUSES TO CONFIGURE WITHOUT
-DOXYGEN. configure.ac:97-98 leaves `--with-python` on, and :589-593 then makes
-doxygen mandatory with an AC_MSG_ERROR. That is not a warning or a skipped
-target: a plain `./configure` fails on a machine without doxygen, and succeeds
-on one that has it — producing a DIFFERENT artifact, with Python bindings and a
-dependency on python.org, which is itself one of the twenty-two projects
-go-zpkg/recipes#143 is about. `--without-python` is therefore the switch that
-keeps this recipe from raising the closure's skip count instead of lowering it.
+⛔⛔ THIS RECIPE SHIPPED WITH A FALSE HEADLINE AND THIS PARAGRAPH REPLACES IT.
+The first version of this note said "the default configuration of this C
+library refuses to configure without doxygen", from configure.ac:97-98
+documenting `--with-python` as "(on)". That help text is STALE — the bindings
+became off-by-default in 2.15 — and the claim was wrong.
 
-⛔ AND THE HELP TEXT IS WHERE THE DEFAULT IS STATED, WHICH IS NOT THE SAME AS
-WHERE IT IS DECIDED. `test "$with_python" = "" && with_python=no` appears at
-:239 and reads exactly like the general default — it is inside the
-`--with-minimum` branch opened at :223. Reading that line alone would have
-given the opposite answer to reading its block, which is the shape
-`naming-a-switch-does-not-always-pin-it` records: read the BODY of the macro,
-not the default beside it.
+⭐ WHAT SETTLED IT WAS THE GENERATED SCRIPT, not more argument about the .ac
+file. `configure:14421-14423` is the two-argument AC_ARG_WITH form, which
+assigns `with_python` only when the flag is PASSED; the script's one textual
+assignment to it, `configure:14642`, is inside the `--with-minimum` branch; and
+its two consumers, `:15354` and `:15832`, both test for "yes". A plain
+`./configure` leaves the variable EMPTY, so the AC_MSG_ERROR for doxygen is
+reachable only through a flag. `./configure --help` would have printed the same
+stale "(on)", because it prints that string.
+
+⛔ SO THE LESSON IS THE INVERSE OF THE ONE FIRST WRITTEN HERE. I had read the
+help text beside the macro and believed it, then read `:239` — which does state
+the true default, `with_python=no` — and talked myself OUT of it because it sits
+inside the `--with-minimum` branch at :223. The branch reading was correct and
+the conclusion was still wrong, because the general case is not "yes" but
+EMPTY, which is also off. A documented default is a claim; the assignment in
+the artifact that runs is the fact.
+
+⭐ `--without-python` stays, and is now named for a measured reason rather than
+a wrong one: pkgxdev/pantry's recipe passes `--with-python` deliberately and so
+build-depends on `doxygen.nl` and `python.org >=3<3.12` and sets a runtime
+PYTHONPATH. python.org is one of the twenty-two (go-zpkg/recipes#143), so that
+path would RAISE this closure's skip count. The flag pins us against the stale
+documentation and against that alignment.
 
 ⚠ TWO ASSUMPTIONS OF MY OWN WERE WRONG AND ARE CORRECTED HERE RATHER THAN
 QUIETLY DROPPED. I picked this project believing it "depends on zlib and xz,
@@ -274,7 +298,8 @@ runs over.
 
 ⚠ NOT BUILT. Measured here: the digest by two paths including upstream's own
 published sha256sum, the version enumeration, the switch census against the
-project's own configure.ac, and `zpkb lint`. The scripts are a claim about
+project's own configure.ac AND the generated `configure` that overrules it, and
+`zpkb lint`. The scripts are a claim about
 libxml2's build system read from that build system, and they stay a claim until
 a factory runs them.
 EOT
