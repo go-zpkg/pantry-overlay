@@ -401,10 +401,13 @@ jobs:
       # had read it, which is why fleettools now prints "N of M file(s) read"
       # with a census of what it walked past.
       #
-      # Pinned to v0.130.0, the release that exists. The report's context window
-      # cut mid-rune until fleettools#337, which is merged and unreleased — that
-      # costs nothing while this is green and makes the output hard to read on
-      # the day it fires, so the pin rises to the release carrying it.
+      # ⭐ PINNED TO v0.131.0, WHICH IS THE RELEASE CARRYING fleettools#337 —
+      # the promise this step was landed with, kept. Until that tag existed
+      # (2026-11-17 12:55:38Z) the report's context window cut mid-rune, so the
+      # whole thing was invalid UTF-8 and `grep` refused it: a gate whose
+      # FAILURE output could not be read by the tool anybody would reach for.
+      # It cost nothing while this was green, which is exactly why a pin left
+      # at v0.130.0 would have stayed there until the day it mattered.
       # ⛔⛔ AND THIS FILE IS THE SECOND --allow, BECAUSE A CHECK FOR X CANNOT
       # AVOID CONTAINING X. `--old pantry-overlay` is the step's own argument
       # and `.yml` is in staleref's DEFAULT extension set, so the first version
@@ -421,6 +424,6 @@ jobs:
       # of declaring it.
       - name: nothing still calls this repository pantry-overlay
         run: >
-          go run github.com/go-fleettools/fleettools/cmd/staleref@v0.130.0
+          go run github.com/go-fleettools/fleettools/cmd/staleref@v0.131.0
           --old pantry-overlay --new recipes
           --ext hcl --allow README.md --allow .github/workflows/ci.yml .
