@@ -1,11 +1,53 @@
-# ⛔⛔ TWO MISTYPED-IDENTIFIER DEFECTS, both found by measuring rather than
-# reading, while establishing what the tcl-lang.org split would break
-# (go-zpkg/recipes#122). This fragment is not the standalone recipe —
-# that is the next step, and it needs a factory build this session cannot run.
-# These two need no build at all.
+# python.org — the fragment is now a STANDALONE recipe, and the two
+# mistyped-identifier defects it was opened for are kept below.
+#
+# ⛔ WRITTEN FROM CPYTHON'S OWN FILES (go-zpkg/packages#431), at 3.15.2, read
+# out of the published source tarball.
+#
+# ⚠ THE HEADER THIS FILE CARRIED SAID "that is the next step, and it needs a
+# factory build this session cannot run". THAT WAS TOO STRONG, and the campaign
+# since has shown why: go-zpkg/recipes#157, #158, #159, #160 and #161 were all
+# written without a build, each establishing the recipe's INPUTS — every switch,
+# dependency, installed path and licence traced to a line in the project's own
+# files — and saying plainly that the build is unproven. The same standard
+# applies here. What a build would add is confirmation, not the content.
+#
+# ⭐ AND THE AUDIT FOUND A LIVE DEFECT IN THE FRAGMENT ITSELF: it declares
+# `libexpat.github.io` and CPython's default is to IGNORE it. See
+# `--with-system-expat` below.
+
+summary = "Python: the CPython interpreter, its standard library and the tools that ship with it"
+
+# ⛔ THE PSF LICENSE, and LICENSE's own structure is why this is not simply
+# "Python-2.0". The file opens with the PSF LICENSE AGREEMENT FOR PYTHON
+# 3.15.2 and then reproduces, in full, the three historical agreements the
+# code is also distributed under — BeOpen, CNRI and CWI — because CPython's
+# history passed through all four stewards and the grants accumulate rather
+# than replace. SPDX's `Python-2.0` identifier is the composite that names
+# exactly this stack, which is why it is used here rather than inventing an
+# AND-expression over four names SPDX does not carry separately.
+license = "Python-2.0"
+
+# ⚠ wasip1 is excluded by omission and that is a measured exclusion rather than
+# an oversight: configure.ac:7694-7698 turns ensurepip OFF for Emscripten, WASI
+# and iOS, which is upstream saying those targets are a different build with
+# different contents. This fleet has no WASI python target.
+platforms = ["linux", "darwin", "windows", "freebsd", "openbsd", "netbsd"]
 
 dependencies = {
-  "bytereef.org/mpdecimal" = 2
+  # ⛔⛔ THE CONSTRAINT WAS BELOW THE PROJECT'S OWN FLOOR, and the audit found
+  # it. It read `= 2`. configure.ac:4403 requires `libmpdec >= 2.5.0` through
+  # pkg-config, and configure.ac:4416-4418 enforces the same minimum in C:
+  #
+  #     #if MPD_VERSION_HEX < 0x02050000
+  #     #  error "mpdecimal 2.5.0 or higher required"
+  #
+  # A `2` that resolved to 2.4.x would fail the link test, and — see the
+  # module census below — that does NOT fail the build. It produces a Python
+  # with no `_decimal`, which surfaces as `import decimal` failing at runtime
+  # in whatever consumer reaches for it first.
+  "bytereef.org/mpdecimal" = ">=2.5.0"
+
   darwin = {
     "gnu.org/gettext" = "^1"
   }
@@ -78,9 +120,12 @@ dependencies = {
 # would be better still, and the schema has no key for one; `sha256` is the
 # real answer, because a recipe that pins is fail-closed ("building a version
 # absent from the map is refused, not fetched unverified", schema/
-# package.schema.json's own words on the field). That belongs with the
-# standalone recipe, where the set of versions we actually build can be read
-# off the registry rather than guessed.
+# package.schema.json's own words on the field).
+#
+# ⭐ AND THAT ANSWER IS NOW IN PLACE: the `sha256` block below pins 3.15.2, so
+# a build of any other version is REFUSED rather than fetched unverified. The
+# ignore list is no longer the only thing standing between this recipe and a
+# tarball from 1991 — it is now the thing that keeps `zpkb versions` readable.
 #
 # ⚠ `ignore` REPLACES upstream's rather than extending it — an overlay list
 # does not merge (recipefile/overridden_test.go: "a list must replace") — so
@@ -136,11 +181,7 @@ versions {
     # and that is why it is safe to do here: 2.7.18 — the one version
     # upstream's comment says is supported — is ALREADY unresolvable, excluded
     # by `2.7.[0-9]` matching the `2.7.1` inside it. Measured: zero 2.7.*
-    # versions resolve, before or after this line. The contradiction between
-    # that comment and its own patterns is reported in the pull request rather
-    # than resolved here, because resolving it means deciding whether the
-    # `if: ^2` machinery (PYTHON2PATCHES, the patch loop, the `unpackaged`
-    # entry below) should exist at all — an owner's call, not a regex's.
+    # versions resolve, before or after this line.
     # ⛔⛔ EVERY MAJOR.MINOR TAG WITH NO PATCH SEGMENT, in ONE pattern rather
     # than a list — and the list is what I tried first.
     #
@@ -162,6 +203,236 @@ versions {
     # ⭐ It does not touch real versions: `3.3.0` and `3.10.22` have a patch
     # segment, so `$` cannot follow the minor. Verified in the A/B below.
     "^v?\\d+\\.\\d+$",
+  ]
+}
+
+distributable {
+  url              = "https://www.python.org/ftp/python/{{version.raw}}/Python-{{version.raw}}.tar.xz"
+  strip-components = 1
+
+  # 27960396 bytes, recorded with the builder's own fetcher:
+  #
+  #   zpkb sourcepin --version 3.15.2 \
+  #     https://www.python.org/ftp/python/3.15.2/Python-3.15.2.tar.xz
+  #
+  # ⭐ AND IDENTICAL TO THE SHA-256 PUBLISHED ON THE RELEASE PAGE ITSELF
+  # (python.org/downloads/release/python-3152/, the "XZ compressed source
+  # tarball" row). Two paths, one answer, the second being the project's own
+  # statement rather than a second download of the same bytes.
+  sha256 = {
+    "3.15.2" = "8b5536d280142ecf6cdfe15d12a21ba1c65e300bbf7b28a8d0cdb849575797de"
+  }
+}
+
+build {
+  # ⛔⛔ THE CENSUS THAT MATTERS MOST HERE IS NOT THE SWITCHES — IT IS THE
+  # THIRTY-ODD OPTIONAL MODULES THAT ARE BUILT ONLY IF THEIR LIBRARY IS FOUND,
+  # AND THE BUILD DOES NOT FAIL WHEN ONE IS NOT. configure.ac:8220-8248
+  # documents its own states:
+  #
+  #     dnl    n/a: marked unavailable on platform by PY_STDLIB_MOD_SET_NA()
+  #     dnl    yes: enabled and supported
+  #     dnl    missing: enabled and not supported
+  #     dnl    disabled: not enabled
+  #
+  # and `missing` is what a found-nothing produces: `AM_CONDITIONAL(modcond,
+  # [test "$modstate" = yes])` simply excludes the module, `make` exits 0, and
+  # the artifact is a Python that cannot `import ssl`, or `sqlite3`, or
+  # `decimal`. ⚠ There is no flag that turns this into an error —
+  # `--with-missing-stdlib-config` (configure.ac:317-323) only supplies custom
+  # MESSAGE text for the ones that went missing.
+  #
+  # ⭐ SO THE TEST BLOCK IS THE GATE, and it is written against exactly the
+  # libraries this recipe declares: every one of them has an `import` below. A
+  # dependency that stops being passed, or a library that stops being found,
+  # fails there instead of in whichever consumer reaches for the module first.
+  dependencies = {
+    # ⚠ Not declared here and used anyway: `freedesktop.org/pkg-config`, which
+    # configure needs for every PKG_CHECK_MODULES above. It arrives through
+    # go-zpkg/base-toolchain, which names it among its members.
+  }
+
+  env = {
+    ARGS = [
+      "--prefix={{prefix}}",
+
+      # ⛔⛔ THE DEFECT THE AUDIT FOUND. configure.ac:4256-4261 ends with
+      # `[with_system_expat="no"]` — the DEFAULT IS NO, and the help string
+      # says so too ("default is no"). So CPython builds `pyexpat` against its
+      # own bundled copy of expat and the `libexpat.github.io` dependency this
+      # recipe declares is INERT: the library is staged, paid for in the
+      # closure, and not linked.
+      #
+      # That is worse than cmake's twelve vendored libraries
+      # (go-zpkg/recipes#160), because there the recipe did not claim
+      # otherwise. Here the dependency list asserts a relationship the build
+      # does not have, so `zpkb sonames` and the SBOM would both describe an
+      # artifact that is not this one.
+      "--with-system-expat",
+
+      # ⚠ THE DEFAULT, RESTATED — AND VERIFIED AGAINST THE CODE RATHER THAN
+      # THE HELP STRING, because this campaign has been burned by exactly that
+      # (go-zpkg/recipes#150: "a help text is a claim, the generated configure
+      # is the fact"). Here the help says "default is yes" and
+      # configure.ac:4397's third argument is `[with_system_libmpdec="yes"]`,
+      # so the two agree. Restated anyway: it decides whether a vendored
+      # libmpdec enters the artifact.
+      #
+      # ⛔ AND THE FALLBACK IS NOT THE BUNDLED COPY. configure.ac:4402-4406:
+      # if pkg-config does not answer for `libmpdec >= 2.5.0`, it does NOT
+      # call USE_BUNDLED_LIBMPDEC — it sets `-lmpdec -lm` and runs a link test
+      # (:4413-4421), and a failure there sets `have_mpdec=no`, which takes
+      # `_decimal` out of the build. Hence the `>=2.5.0` on the dependency.
+      "--with-system-libmpdec",
+
+      # ⛔ ensurepip's DEFAULT IS PLATFORM-DEPENDENT, which is the shape this
+      # campaign treats as worse than a plain default. configure.ac:7693-7698:
+      #
+      #     AS_CASE([$ac_sys_system],
+      #       [Emscripten], [with_ensurepip=no],
+      #       [WASI], [with_ensurepip=no],
+      #       [iOS], [with_ensurepip=no],
+      #       [with_ensurepip=upgrade])
+      #
+      # Pinned to `install`, which is what every platform this recipe lists
+      # resolves to today, so the artifact's contents stop depending on which
+      # branch `$ac_sys_system` took.
+      #
+      # ⚠ AND THE VENDORED-PIP QUESTION IS NAMED AND NOT DECIDED HERE.
+      # ensurepip ships a wheel of pip inside the artifact, which is a bundled
+      # third-party package invisible to `zpkb sonames` and to the advisory
+      # machinery — the same class as cmake's twelve. Turning it off would
+      # change what consumers of this package can do, which is an owner's call
+      # and not a regex's; this recipe makes the behaviour DETERMINISTIC and
+      # reports the concern rather than acting on it.
+      "--with-ensurepip=install",
+
+      # ⚠ Upstream's defaults, RESTATED rather than relied on, because each
+      # changes what is in the artifact and each has an arm a future reader
+      # might reach for:
+      #
+      #   --enable-optimizations  default no  (configure.ac:1858-1866) — PGO,
+      #                           which also makes the build's output depend on
+      #                           a training run
+      #   --with-lto              default no  (configure.ac:1940-1941)
+      #   --enable-shared         default no  (configure.ac:1512-1513), so
+      #                           libpython is static and `bin/python3` is
+      #                           self-contained
+      "--disable-optimizations",
+      "--without-lto",
+      "--disable-shared",
+    ]
+  }
+
+  # ⚠ `--enable-test-modules` DEFAULTS TO YES (configure.ac:8005-8008,
+  # `[TEST_MODULES=yes]` as the third argument), so `Lib/test` — tens of
+  # megabytes — IS installed. That default is a deterministic constant, so it
+  # is not a defect by this campaign's standard and it is NOT changed here:
+  # removing it would break `import test` for any consumer that uses it, which
+  # is a behaviour change rather than a correctness fix. Named so the size is
+  # a known quantity rather than a surprise.
+  script = [
+    "./configure $ARGS",
+    "make --jobs {{ hw.concurrency }}",
+    "make install",
+  ]
+}
+
+# ⛔ READ FROM Makefile.pre.in's OWN INSTALL RULES, not from a guess at what a
+# python installs:
+#
+#   :2506  $(INSTALL_PROGRAM) $(BUILDPYTHON) $(BINDIR)/python$(LDVERSION)
+#   :2571  the `python3` name, removed and recreated as a link
+#   :3072  $(INSTALL_SCRIPT) python-config $(BINDIR)/python$(LDVERSION)-config
+#   :3073  $(INSTALL_SCRIPT) $(SCRIPT_IDLE)  $(BINDIR)/idle$(VERSION)
+#   :3074  $(INSTALL_SCRIPT) $(SCRIPT_PYDOC) $(BINDIR)/pydoc$(VERSION)
+#
+# ⚠ THE VERSIONED NAMES ARE DELIBERATELY ABSENT. `bin/python3.15`,
+# `bin/idle3.15` and friends carry the minor version, so listing them would
+# make `provides` wrong on the next line — and a `provides` entry that is wrong
+# for 3.16 is the defect `zpkb lint` exists to catch. The unversioned names are
+# the stable surface.
+#
+# ⚠ `bin/pip3` comes from ensurepip rather than from an install rule, and is
+# listed because `--with-ensurepip=install` above makes it deterministic.
+provides = [
+  "bin/python3",
+  "bin/python3-config",
+  "bin/idle3",
+  "bin/pydoc3",
+  "bin/pip3",
+]
+
+test {
+  script = [
+    "\"{{prefix}}/bin/python3\" --version",
+
+    # ⛔⛔ THE GATE FOR THE THIRTY-ODD OPTIONAL MODULES. Every entry here is a
+    # module whose presence depends on a library this recipe DECLARES, and
+    # configure.ac:8236 sets such a module to `missing` — silently, with the
+    # build still exiting 0 — when the library is not found. One import each,
+    # so the failure names the module rather than the package.
+    #
+    # The mapping is from CPython's own configure to this recipe's
+    # `dependencies`:
+    #
+    #   _ssl, _hashlib → openssl.org          zlib    → zlib.net
+    #   _sqlite3       → sqlite.org           bz2     → sourceware.org/bzip2
+    #   _lzma          → tukaani.org/xz       _ctypes → sourceware.org/libffi
+    #   readline       → gnu.org/readline     _curses → invisible-island.net/ncurses
+    #   _decimal       → bytereef.org/mpdecimal
+    #   pyexpat        → libexpat.github.io   (and ONLY once --with-system-expat
+    #                                          is passed — see the build block)
+    #   _tkinter       → tcl-lang.org         (tk, not just core Tcl; see #122)
+    {
+      run = <<EOT
+set -e
+"{{prefix}}/bin/python3" - <<'PY'
+import sys
+mods = [
+    "ssl", "hashlib", "sqlite3", "bz2", "lzma", "ctypes",
+    "readline", "curses", "decimal", "zlib", "pyexpat", "tkinter",
+]
+missing = []
+for m in mods:
+    try:
+        __import__(m)
+    except Exception as e:
+        missing.append("%s (%s)" % (m, e))
+if missing:
+    print("python: optional stdlib modules are MISSING from this build:", file=sys.stderr)
+    for m in missing:
+        print("  " + m, file=sys.stderr)
+    print("", file=sys.stderr)
+    print("Each is built only when its library is found: configure.ac:8220-8248", file=sys.stderr)
+    print("sets the module to 'missing' and the build still exits 0, so this is", file=sys.stderr)
+    print("the only place it can be caught. Check the matching dependency.", file=sys.stderr)
+    raise SystemExit(1)
+PY
+EOT
+    },
+
+    # ⭐ AND THE ONE THAT PROVES THE INTERPRETER WORKS RATHER THAN MERELY
+    # STARTS: compute something, and check the two modules most likely to be
+    # subtly wrong rather than absent.
+    {
+      run = <<EOT
+set -e
+"{{prefix}}/bin/python3" - <<'PY'
+import decimal, ssl, sqlite3
+assert decimal.Decimal(1) / decimal.Decimal(7) != 0
+assert ssl.OPENSSL_VERSION_INFO[0] >= 3, ssl.OPENSSL_VERSION
+con = sqlite3.connect(":memory:")
+con.execute("create table t(x)")
+con.execute("insert into t values (41)")
+assert con.execute("select x + 1 from t").fetchone()[0] == 42
+PY
+EOT
+    },
+
+    # pip exists because --with-ensurepip=install was passed; if that is ever
+    # dropped, this says so rather than leaving a `provides` entry dangling.
+    "\"{{prefix}}/bin/pip3\" --version",
   ]
 }
 
@@ -195,3 +466,64 @@ unpackaged = [
     reason   = "help-wanted"
   },
 ]
+
+provenance {
+  read = [
+    "configure.ac",      # :317-323 --with-missing-stdlib-config is MESSAGES only; :1512-1513 --enable-shared default no; :1858-1866 --enable-optimizations default no; :1940-1941 --with-lto default no; :4256-4261 --with-system-expat default NO; :4382-4422 --with-system-libmpdec default yes and the link-test fallback that drops _decimal; :4602-4643 the tcl/tk probes; :7689-7698 ensurepip's platform-dependent default; :8005-8008 --enable-test-modules default yes; :8220-8248 PY_STDLIB_MOD and the four module states, including `missing`
+    "Makefile.pre.in",   # :2506, :2571, :3072-3074 — the install rules `provides` is read from
+    "LICENSE",           # the PSF agreement for 3.15.2 plus the BeOpen, CNRI and CWI agreements it reproduces
+    "README.rst",        # the project's own description
+  ]
+
+  note = <<EOT
+⛔⛔ CPYTHON NO LONGER PUBLISHES A PGP SIGNATURE, AND THAT IS A GAP IN THIS
+FLEET'S TOOLING RATHER THAN IN THE PROJECT'S PRACTICE. python.org/download/
+sigstore states it plainly: starting with Python 3.14, **Sigstore is the only
+signing and verification method**; older releases keep "legacy OpenPGP
+signatures". Measured on the 3.15.2 release page: the source rows carry
+`Python-3.15.2.tar.xz`, `Python-3.15.2.tar.xz.sigstore` and
+`Python-3.15.2.tar.xz.spdx.json` — a bundle and an SBOM, and **no `.asc`**.
+
+So `zpkb sourcepin --sig` cannot be used here at all: it speaks PGP, and there
+is nothing for it to read. The digest below is therefore recorded at the
+"published checksum" rung — the project's own sha256 on its release page,
+confirmed byte for byte by the builder's own fetcher.
+
+⚠ WHAT VERIFYING THE BUNDLE WOULD TAKE, so it is one step and not a
+rediscovery:
+
+    python -m sigstore verify identity \
+      --bundle Python-3.15.2.tar.xz.sigstore \
+      --cert-identity <the release manager's address> \
+      --cert-oidc-issuer https://accounts.google.com \
+      Python-3.15.2.tar.xz
+
+⛔ AND THE IDENTITY IS NOT A STABLE PIN THE WAY A FINGERPRINT IS. Sigstore's
+certificate identity here is the RELEASE MANAGER'S EMAIL, and python.org says
+it varies by release — 3.11 was `pablogsal@python.org`. A recipe that hardcoded
+one identity would be wrong for the next line, which is a real difference from
+a PGP fingerprint that outlives the release manager. Whatever this fleet builds
+for Sigstore has to carry the identity PER VERSION, beside the digest, rather
+than once per project.
+
+⚠ AND THERE IS A BOOTSTRAP CIRCULARITY worth naming: the verification command
+above is `python -m sigstore`. Verifying CPython's own tarball needs a working
+Python. It is not a blocker — the check happens when the digest is RECORDED, on
+a machine that already has one, which is Guix's division and the same reason
+`sourcepin` checks PGP at pin time rather than at build time — but a fleet
+Sigstore verb has to be built with that in mind rather than as a Python script.
+
+⛔ NOT BUILT. No session here can run the factory, so what is established is
+this recipe's INPUTS: every switch, dependency, installed path and licence
+traced to a line in CPython's own files and cited in `read` above. The build is
+unproven and should be read as such.
+
+⭐ THE TEST BLOCK IS THE PART TO READ IF YOU READ ONE THING. CPython's optional
+stdlib modules are the largest auto-detection in this tree — around thirty of
+them, each built only if its library was found, with `make` exiting 0 either
+way (configure.ac:8220-8248). No flag turns that into an error. So the twelve
+imports in `test` are not a formality: they are the only thing standing between
+a dependency that stops being linked and a consumer discovering it with
+`import ssl` in production.
+EOT
+}
