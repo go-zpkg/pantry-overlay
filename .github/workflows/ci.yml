@@ -196,6 +196,37 @@ jobs:
       # FT_REQUIRE_HVF to pin it — measured, the darwin dylib was carrying
       # /usr/lib/libhvf.dylib.
       #
+      # 186 → 185 with python.org, the twelfth — and the LARGEST blocker on
+      # go-zpkg/recipes#143's table, which lists 14 projects whose closure waits
+      # on it.
+      #
+      # ⛔ ITS OWN HEADER SAID IT COULD NOT BE DONE HERE: "that is the next
+      # step, and it needs a factory build this session cannot run". That was
+      # too strong, and the five recipes before it are why — mpdecimal, nghttp2,
+      # musl, cmake and ninja were each written without a build, establishing
+      # the INPUTS and saying plainly that the build is unproven. A build would
+      # confirm; it does not supply the content.
+      #
+      # ⭐ AND THE AUDIT FOUND A LIVE DEFECT, which is what completing a
+      # fragment is for (#85): the recipe DECLARES `libexpat.github.io` and
+      # configure.ac:4256-4261 ends with `[with_system_expat="no"]`. The
+      # default is to build pyexpat against CPython's OWN BUNDLED COPY, so the
+      # dependency was staged, paid for in the closure, and not linked — the
+      # dependency list asserting a relationship the build does not have, which
+      # is worse than cmake's twelve vendored libraries because there nothing
+      # claimed otherwise. Also raised `bytereef.org/mpdecimal` from `2` to
+      # `>=2.5.0`, the floor configure.ac:4403 and :4416-4418 both enforce.
+      #
+      # ⛔⛔ AND IT CARRIES THE BIGGEST AUTO-DETECTION IN THIS TREE. CPython has
+      # around thirty optional stdlib modules, each built only if its library
+      # was found, and configure.ac:8220-8248 documents the outcome itself:
+      # `missing: enabled and not supported`, with `make` exiting 0 either way.
+      # No flag turns that into an error — `--with-missing-stdlib-config` only
+      # supplies custom message text. So the recipe's test block imports twelve
+      # modules by name, one per declared library: it is the only place a
+      # dependency that stopped being linked can be caught before a consumer
+      # meets it as `import ssl` failing.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -207,7 +238,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 186
+          --require-standalone --max-fragments 185
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
