@@ -279,8 +279,22 @@ build {
     ]
   }
 
+  # ⛔⛔ THE GENERATOR IS PINNED, AND IT WAS NOT WHEN THIS RECIPE WAS WRITTEN —
+  # because the hazard did not exist then. Given no `-G`, CMake picks its
+  # default generator, and on unix that is NINJA WHEN A NINJA IS ON PATH and
+  # Unix Makefiles otherwise. `ninja-build.org` entered this tree on
+  # 2026-11-18 (go-zpkg/recipes#161), so from that moment a machine with ninja
+  # staged configures this project differently from one without it.
+  #
+  # ⚠ HERE IT WOULD FAIL LOUDLY RATHER THAN DIVERGE SILENTLY, which is worth
+  # stating precisely rather than overselling: the next line runs `make`, and
+  # a Ninja-generated tree has no Makefile, so the build stops. That is the
+  # better of the two outcomes — go-zpkg/recipes#163's brotli uses `cmake
+  # --build`, which is generator-agnostic and WOULD have diverged in silence.
+  # Pinned either way, so the recipe's output is a function of the recipe and
+  # not of what else happened to be staged.
   script = [
-    "cmake .. $ARGS",
+    "cmake .. -G \"Unix Makefiles\" $ARGS",
     "make --jobs {{ hw.concurrency }} install",
   ]
 }
