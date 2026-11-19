@@ -90,11 +90,14 @@ distributable {
 
   # Each recorded with the builder's own fetcher —
   #
-  #   zpkb sourcepin --version <v> \
+  #   zpkb sourcepin --version <v> --sig auto --sig-covers decompressed \
+  #     --key <gregkh> --fingerprint "647F 2865 …" \
   #     https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-<v>.tar.xz
   #
   # — and each confirmed by a second, independent fetch-and-hash (`curl --fail`
-  # + `shasum -a 256`): two paths, one answer, twice.
+  # + `shasum -a 256`): two paths, one answer, twice. Re-run against zpkb
+  # v0.85.0 on 2026-11-19, which is the first release that can verify these
+  # signatures at all, and both digests came out unchanged.
   #
   # ⭐ TWO PINS AND NOT ONE, FOR A REASON THE FIRST DRAFT GOT WRONG. 7.2.15 is
   # what go-zpkg/base-toolchain's `~7.2` needs, and pinning only that would have
@@ -110,10 +113,16 @@ distributable {
     "7.2.15" = "d0f6b1d7324c937ccaeb5c4ca7084bfcf71db2edb3e2d3a31f0ad83a681809ab"
   }
 
-  # ⛔⛔ THE SIGNATURE IS GOOD AND `zpkb sourcepin --sig` CANNOT SEE IT. The
-  # whole measurement is in `provenance.note` below, with the digests of both
-  # the compressed and the decompressed bytes, because the difference between
-  # the two IS the finding. Filed as go-zpkg/zpkb#492 rather than worked around.
+  # ⭐⭐ BOTH DIGESTS ARE SIGNATURE-VERIFIED BY THE TOOL, with
+  # `--sig-covers decompressed`, because kernel.org signs the UNCOMPRESSED tar.
+  # The whole measurement is in `provenance.note` below — both digests, the A/B
+  # one flag apart, and the signing instant per version. This comment used to
+  # read "THE SIGNATURE IS GOOD AND `zpkb sourcepin --sig` CANNOT SEE IT": that
+  # was go-zpkg/zpkb#492, fixed in go-zpkg/zpkb#507, released as v0.85.0.
+  #
+  # ⚠ ANYTHING OLDER THAN v0.85.0 STILL REFUSES THESE SIGNATURES, and refuses
+  # them as `RSA verification failure` — which reads as a bad key rather than as
+  # a missing flag. Check what is installed before concluding the archive moved.
 }
 
 build {
@@ -263,6 +272,12 @@ provenance {
     "scripts/headers_install.sh",               # the tool census: sed -E, scripts/unifdef; and the Linux-syscall-note check
     "Documentation/kbuild/headers_install.rst", # the two arguments, their defaults, and "the linux/asm directory … is platform-specific"
     "arch/",                                    # the ARCH names, and the three single-arch witness headers with their cross-checks
+    # Not a build file, and listed here because it is still the PROJECT's own
+    # statement about its releases: it is where "the signature is made against
+    # the uncompressed version of the archive" comes from, which is the whole
+    # reason this recipe passes --sig-covers decompressed, and it carries the
+    # signing fingerprint this recipe names. Read directly on 2026-11-19.
+    "https://www.kernel.org/signature.html",
   ]
 
   consulted = [
@@ -274,11 +289,11 @@ provenance {
   ]
 
   note = <<EOT
-⛔⛔ THE SIGNATURE IS GOOD, AND OUR OWN VERIFIER CANNOT CHECK IT. This is the
-first recipe here whose trust chain is sound and whose warrant could NOT be
-recorded with `zpkb sourcepin --sig`, and the reason is structural rather than a
-bad key — so it is written down with both digests, because the difference
-between them is the whole finding.
+⭐⭐ BOTH DIGESTS ARE NOW VERIFIED BY `zpkb sourcepin` ITSELF, which they were
+not when this recipe was written. The note below used to open "THE SIGNATURE IS
+GOOD, AND OUR OWN VERIFIER CANNOT CHECK IT"; the gap it described is
+go-zpkg/zpkb#492, fixed in go-zpkg/zpkb#507 and released as **v0.85.0**. The
+explanation is kept because it is still why the flag has to be passed.
 
 kernel.org signs the UNCOMPRESSED tar. Its own signature.html says why — "the
 signature is made against the uncompressed version of the archive … so there is
@@ -289,61 +304,68 @@ command that produced the signed bytes:
   Comment: This signature is for the .tar version of the archive
   Comment: git archive --format tar --prefix=linux-7.2.15/ v7.2.15
 
-A recipe's `distributable.url` names the .tar.xz, so sourcepin hashes and
-verifies THOSE bytes:
+A recipe's `distributable.url` names the .tar.xz, so `--sig-covers decompressed`
+is what says that the warrant is over the other stream while the digest pinned
+stays the compressed file's — which is what a build downloads.
 
-  $ zpkb sourcepin -sig …/linux-7.2.15.tar.sign -key <gregkh> \
-      -fingerprint "647F 2865 …" -version 7.2.15 …/linux-7.2.15.tar.xz
-  sourcepin: … is not vouched for by the key you passed: openpgp: invalid
-  signature: RSA verification failure — the bytes downloaded fine and hash to
-  d0f6b1d7… ; what failed is WHO signed them, so do not pin this until you
-  know why
+Re-run on 2026-11-19 against v0.85.0, once per pinned version:
 
-⭐ That refusal is CORRECT and its advice was followed: the "why" was found
-before anything was pinned. Measured with a purpose-built control that
-decompresses first and carries both a positive and a negative test (a good
-signature verifies; the same signature over one flipped byte is refused):
+  $ zpkb sourcepin --version 7.2.15 --sig auto --sig-covers decompressed \
+      --key <gregkh> --fingerprint "647F 2865 …" \
+      https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.15.tar.xz
 
   archive    linux-7.2.15.tar.xz   160461468 bytes
-    sha256   d0f6b1d7324c937ccaeb5c4ca7084bfcf71db2edb3e2d3a31f0ad83a681809ab   <- what this recipe PINS
+    sha256   d0f6b1d7324c937ccaeb5c4ca7084bfcf71db2edb3e2d3a31f0ad83a681809ab   <- what this recipe PINS, reproduced by the tool
   tar        (decompressed)       1693143040 bytes
     sha256   1ade1a3b4ce88b0cd8e09f8818714916a89fc377e0b433fa1f3a2083fae9d9cb   <- what the SIGNATURE covers
-  signature  GOOD over the decompressed tar
-    signer   647f28654894e3bd457199be38dbbdc86092693e
+  signature  GOOD, signed at 2026-11-01T12:45:29Z
+    signer   647F28654894E3BD457199BE38DBBDC86092693E
 
   archive    linux-7.3.4.tar.xz    162439264 bytes
-    sha256   b11b6df8295e8e991ff040b71aaa4994a8b55caa23b6b092907f195b5840fd1f   <- what this recipe PINS
+    sha256   b11b6df8295e8e991ff040b71aaa4994a8b55caa23b6b092907f195b5840fd1f   <- what this recipe PINS, reproduced by the tool
   tar        (decompressed)       1718958080 bytes
     sha256   8f61e30c134e2e862c394728456dabd6530bf819184f7709bb63cb7866c92760   <- what the SIGNATURE covers
-  signature  GOOD over the decompressed tar
-    signer   647f28654894e3bd457199be38dbbdc86092693e
+  signature  GOOD, signed at 2026-11-10T18:11:52Z
+    signer   647F28654894E3BD457199BE38DBBDC86092693E
 
-Both pins, same signer. That fingerprint is Greg Kroah-Hartman's, and it matches
-kernel.org's own "Important fingerprints" table character for character:
+Both pins, same signer, and both digests came out of the tool equal to what was
+already written here — so the earlier measurement and this one agree, which is
+the only reason to trust either.
 
-  647F 2865 4894 E3BD 4571  99BE 38DB BDC8 6092 693E
+⭐ AND THE A/B IS WHAT MAKES IT A MEASUREMENT RATHER THAN A HOPE. The same
+command without the flag, same key, same signature URL, same archive:
 
-So this digest IS signature-verified; it is simply not verifiable BY `sourcepin`
-today. The gap is "verify a detached signature over the decompressed stream
-while pinning the digest of the compressed file", which is a feature of the tool
-and not a property of the archive. Filed as go-zpkg/zpkb#492 rather than left as
-a footnote here; it is a sibling of go-zpkg/zpkb#482 and #484, which keep other
-good upstream signatures from being recordable — those two are about the crypto,
-#492 is about which BYTES reach it.
+  --sig-covers served        openpgp: invalid signature: RSA verification failure
+  --sig-covers decompressed  GOOD
 
-⚠ TWO HONEST LIMITS ON THE WARRANT, the same two gnu.org/gzip records and one
-of them weaker here:
+One flag apart. The refusal is still correct for the bytes it was given.
 
-  - the key was fetched from kernel.org's Web Key Directory over TLS, which is
-    the ONE source kernel.org documents ("gpg2 --locate-keys gregkh@kernel.org
-    … will verify the TLS certificate presented by kernel.org"), and the
-    fingerprint table is served by kernel.org too. Same host as the tarball, so
-    this is CONTINUITY and not independence.
-  - `-sig auto` could not have found this signature even in principle: it tries
-    <url>.asc then <url>.sig, and measured on 2026-11-16,
-    linux-7.2.15.tar.xz.asc, .tar.xz.sig and .tar.xz.sign all answer 404 while
-    linux-7.2.15.tar.sign answers 200. The only published signature does not
-    name the bytes any distributable url serves.
+⭐⭐ THE KEY IS PUBLISHED ON TWO INDEPENDENT HOSTS, which retires the weaker of
+the two limits this note used to record. It said "same host as the tarball, so
+this is CONTINUITY and not independence" — true of kernel.org's Web Key
+Directory. Measured 2026-11-19, both sides checked here rather than relayed:
+
+  - https://github.com/gregkh.gpg — GitHub's ACCOUNT endpoint, which binds the
+    key to the account rather than to a keyserver, 75381 bytes. `sourcepin`
+    selected a key from it with `--fingerprint` and reported the full
+    fingerprint back, so that file demonstrably holds it. This is the same trick
+    that finished rsync.samba.org (go-zpkg/recipes#166).
+  - https://www.kernel.org/signature.html — carries
+    `647F 2865 4894 E3BD 4571  99BE 38DB BDC8 6092 693E` in its "Important
+    fingerprints" table, read directly today (19073 bytes, the string present
+    twice).
+
+Two organisations, two hosts, one fingerprint. Not a key obtained out of band
+from a person, which remains the only stronger rung, but no longer a single
+publisher vouching for itself.
+
+⚠ ONE LIMIT STANDS, in a better form than before: `--sig auto` now DOES find
+this signature, because in `decompressed` mode it strips the compression suffix
+first and tries <base>.sign before .asc and .sig — <base>.sign being the name
+kernel.org publishes. Measured 2026-11-16 and unchanged: linux-7.2.15.tar.xz.asc,
+.tar.xz.sig and .tar.xz.sign all answer 404 while linux-7.2.15.tar.sign answers
+200. A signature is published under the name of the bytes it COVERS, which is
+why appending to the compressed URL could never have worked.
 
 ⛔ AND ONE THING THIS RECIPE DOES NOT CLAIM: it has not been built. No session
 here can run the factory, so what is established is the recipe's inputs — every
