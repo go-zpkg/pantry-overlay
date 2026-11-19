@@ -55,11 +55,36 @@ distributable {
   #   gpg:                using DSA key 87EA44D150D89615E39A3FEEF0DC8E00B28C5995
   #   gpg: Good signature from "Brendan O'Dea <bod@debian.org>"
   #
-  # Two implementations, one key, opposite answers. The discriminator is the
-  # ALGORITHM: ProtonMail/go-crypto declines DSA-with-SHA-1 and reports it as
-  # "unknown entity", which is true of nothing here. Filed against zpkb as a
-  # diagnostic defect; the verdict it reaches is defensible, the sentence it
-  # prints is not.
+  # Two implementations, one key, opposite answers. ⛔⛔ AND THE DISCRIMINATOR
+  # WRITTEN HERE FIRST WAS WRONG: "the ALGORITHM: ProtonMail/go-crypto declines
+  # DSA-with-SHA-1 and reports it as unknown entity". It does not. That came
+  # from reading the packet dump above — algo 17 and digest algo 2 really are
+  # there — and inferring the rest. Measured 2026-11-19 against this exact
+  # keyring and this exact 95-byte signature (go-zpkg/zpkb#482, fixed in
+  # go-zpkg/zpkb#508):
+  #
+  #   KeysById                              1
+  #   KeysByIdUsage(KeyFlagSign)            0     <- the refusal, and all of it
+  #   SelfSignature.FlagsValid              false, made 2001-06-19
+  #   PublicKey.VerifySignature by hand     nil   <- GOOD, SHA-1 and all
+  #   CheckDetachedSignature, flags patched nil   <- one variable, and it passes
+  #
+  # The key's self-signature is from 2001 and carries NO key-flags subpacket,
+  # so nothing in the key states that it may sign data; openpgp/keys.go:343
+  # skips it, the candidate list empties, and openpgp/read.go:493 answers
+  # ErrUnknownIssuer. ⭐ A KEY OLDER THAN THE FLAG, NOT A WEAK ALGORITHM — the
+  # data signature's hash is never judged, because the lookup fails before any
+  # cryptography runs. go-zpkg/zpkb#508 makes the refusal itself say this,
+  # instead of "what failed is WHO signed them"; released as v0.86.0.
+  #
+  # ⚠ AND THE VERDICT STILL STANDS, which is why this recipe has not moved.
+  # Accepting a flagless key as sign-capable is what gpg does and would make
+  # this verify, but RFC 9580 §5.2.3.29 does not say what an absent subpacket
+  # implies and its nearest statement goes the other way — "If a list is
+  # shorter than an implementation expects, the unstated flags are considered
+  # to be zero." So the open question is not "how much is a SHA-1 signature
+  # worth" but "does this pantry pin on a key whose self-signature predates key
+  # flags?", and that is the owner's to answer.
   #
   # ⛔ SO WHAT THIS DIGEST RESTS ON, said plainly: our own fetch-and-hash, plus
   # a signature verified by a SECOND implementation against GNU's keyring —
@@ -68,6 +93,13 @@ distributable {
   # are practical and a 2022 DSA signature is not evidence against a prepared
   # file. It is stronger than gnu.org/make's, whose key is absent from that
   # keyring entirely (#113).
+  #
+  # ⭐ THAT STRENGTH JUDGEMENT IS A DIFFERENT CLAIM FROM THE REFUSAL ABOVE, AND
+  # KEEPING THEM APART IS THE WHOLE LESSON OF go-zpkg/zpkb#482. The warrant IS
+  # weak, for the reason stated: SHA-1. Our verifier refuses it for an
+  # unrelated reason: the key flags. Both are true, neither implies the other,
+  # and treating the refusal as evidence for the weakness is what produced the
+  # wrong sentence this note used to carry.
   #
   # Nothing here waits on the upstream maintainer to re-sign; what changes the
   # recipe is a stronger signature, if one appears.
@@ -244,15 +276,27 @@ The signature, and why it is the weakest of the five:
   algo         17 (DSA), digest algo 2 (SHA-1), signed 2022-12-15
   key          87EA44D150D89615E39A3FEEF0DC8E00B28C5995
   identity     Brendan O'Dea <bod@debian.org>
-  verified by  gpg against GNU's keyring — NOT by `zpkb sourcepin`, which
-               declines DSA-with-SHA-1 and reports it as "signature made by
-               unknown entity", a sentence that is true of nothing here
+  verified by  gpg against GNU's keyring, and by this pantry's own verifier
+               when its key-flags check is bypassed — but NOT by `zpkb
+               sourcepin` as it stands
+  refused      because the key's self-signature is from 2001-06-19 and carries
+               NO key-flags subpacket, so nothing in the key states that it may
+               sign data: KeysById 1, KeysByIdUsage(KeyFlagSign) 0, and
+               VerifySignature by hand nil. ⭐ A KEY OLDER THAN THE FLAG. This
+               line used to say "declines DSA-with-SHA-1", which was inferred
+               from the algo/digest numbers above and is wrong — SHA-1 is never
+               judged, the lookup fails first (go-zpkg/zpkb#482, measured and
+               corrected in go-zpkg/zpkb#508, merged)
+  weak because SHA-1, which is a SEPARATE claim from the refusal and stays
+               true: a 2022 DSA/SHA-1 signature is not evidence against a
+               prepared file. The two were conflated here, and that is what
+               produced the wrong sentence
   checked      when the digest was recorded, not at every build
 
 No keyserver was asked. Five recipes, five shapes: sed has an independent
 fingerprint and a published digest; m4 has both from its announcement; gawk
 has a key in the keyring and nothing published; help2man has a key in the
-keyring and a signature only a second implementation will accept; make's key
-is not in that keyring at all.
+keyring whose self-signature predates key flags, so our verifier will not treat
+it as a signing key; make's key is not in that keyring at all.
 EOT
 }
