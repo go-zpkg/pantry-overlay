@@ -98,7 +98,21 @@ distributable {
   # `curl --fail` + `shasum -a 256`, both 91586872 bytes. Arch cannot corroborate
   # — its gcc PKGBUILD builds from a GIT COMMIT (16.2.1+r23+gd564253eb6c8) with
   # no `validpgpkeys` at all, so it pins neither these bytes nor this key.
+  #
+  # ⛔⛔ 16.2.0 ADDED 2026-11-20, AND IT WAS A DEFECT THAT IT WAS MISSING.
+  # `versions` resolves 16.2.0 first (`zpkb versions`), base-toolchain asks for
+  # this member as "*", and a recipe that pins refuses to build a version it
+  # did not pin (zpkb build/pinneddigest_test.go:28-43). So the default build of
+  # this member was a refusal. 16.2.0 is the same digest gnu.org/gcc pins, and
+  # the two move together: a program compiled by g++ N needs a libstdc++ at
+  # least as new as N. Signer and the subkey finding: gnu.org/gcc's
+  # provenance.note. The facts above were read at 14.4.0. At 16.2.0 they moved
+  # but did not change: floors at configure.ac:1795/1813/1830, the clocale
+  # re-probe at libstdc++-v3/acinclude.m4:2833-2838, `__uselocale` x3 in the
+  # gnu c_locale.h and x0 in the generic one, so the witness still tells them
+  # apart.
   sha256 = {
+    "16.2.0" = "e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e"
     "14.4.0" = "752b6f567beac83159c77a7680b1316bdd784738bff9a9d070112c09da90f6d9"
   }
 }
