@@ -3,15 +3,39 @@
 # links: CPython 3.15.2 configure.ac:4607 asks pkg-config for
 # `tcl >= 8.5.12 tk >= 8.5.12`, and tk.pc is installed by this recipe.
 #
-# ⛔ WRITTEN FROM TK 9.0.4'S OWN FILES (go-zpkg/packages#431), read out of the
-# published source tarball, and BUILT AND INSTALLED in a scratch directory on
-# darwin/arm64 twice — as an X11 Tk against XQuartz's libraries (Xft and
-# XScreenSaver both found and compiled in) and as an Aqua Tk. NOT built by the
-# factory, and not built on linux.
+# ⛔ WRITTEN FROM TK 9.0.4'S AND 8.6.18'S OWN FILES (go-zpkg/packages#431), read
+# out of the published source tarballs. 9.0.4 was BUILT AND INSTALLED in a
+# scratch directory on darwin/arm64 twice — as an X11 Tk against XQuartz's
+# libraries (Xft and XScreenSaver both found and compiled in) and as an Aqua Tk.
+# 8.6.18 was built on darwin/arm64 (Aqua) and on linux/aarch64 (a debian:trixie
+# container, X11 with Xft and XScreenSaver; see provenance.note). NOT built by
+# the factory.
 #
-# ⭐ WHICH VERSION: 9.0.4 only, the line CPython 3.15.2 itself ships (see
-# tcl-lang.org). Tk 8.6 is not pinned: its only consumer here was python, and
-# no recipe of this tree asks for it.
+# ⭐ WHICH VERSIONS, AND WHY BOTH: 9.0.4, the line CPython 3.15.2 itself ships
+# (see tcl-lang.org), AND 8.6.18, matching the Tcl 8.6.18 that recipe pins.
+# tcl-lang.org/expect asks for `tcl-lang.org ^8`, and its Tk scripts
+# (`tkpasswd`, `tknewsbiff`: `package require Tk` under `tclsh`) need a Tk that
+# loads into Tcl 8.6, which Tk 9 does not (tcl-lang.org/expect's header: Tk 9's
+# pkgIndex refuses an 8.x Tcl; and unix/configure.ac of 9.0.4 says "requires
+# Tcl 9.0+", :40-41).
+# The two lines differ in three ways this recipe keeps apart:
+#
+#   * the Tcl it needs: `^9` for 9.x, `^8` for 8.x, as a version scope in
+#     `dependencies` (a scope is a flat map, build.go reduceDepMap, so it can
+#     carry a project but not a platform);
+#   * libcups: Tk 9 only. unix/configure.in of 8.6.18 has no `cups` at all
+#     (`grep -n cups` finds nothing) and its `--help` lists no
+#     `--enable-libcups`, so the switch is passed for 9 and not for 8, and the
+#     test asserts that libtk8.6 does NOT link libcups. The cups dependency
+#     below is shared by both lines for the reason stated there;
+#   * the library name and the zipfs: Tk 9 is libtcl9tk9.0 with its script
+#     library embedded as a zip; Tk 8.6 is libtk8.6 with lib/tk8.6 beside it.
+#
+# Xft and XScreenSaver are in 8.6.18 exactly as in 9.0.4: unix/configure.in
+# :456-535 (`--enable-xft` default "default", a miss is silent unless
+# `yes`, and even `yes` only WARNS at :516-518) and :597-639 (`--enable-xss`
+# default yes, HAVE_XSS only when header AND library are found). Both are named
+# below for both lines.
 #
 # ⭐ THE FULL FUNCTION THE OWNER ASKED FOR, on X11 targets (linux): antialiased
 # fonts through Xft and the activity timer through XScreenSaver, each NAMED so
@@ -68,9 +92,15 @@ license = "TCL"
 platforms = ["linux", "darwin"]
 
 dependencies = {
-  # unix/configure.ac:40-41 "requires Tcl 9.0+"; tk.pc `Requires: tcl >= 9.0`,
-  # read off the scratch install. Tk finds tclConfig.sh through --with-tcl.
-  "tcl-lang.org" = "^9"
+  # Tk finds tclConfig.sh through --with-tcl, and the two lines need different
+  # Tcls. 8.6: tk.pc.in `Requires: tcl >= 8.6`. 9.x: unix/configure.ac:40-41
+  # "requires Tcl 9.0+"; tk.pc `Requires: tcl >= 9.0`, read off the scratch
+  # install. The scope overrides the plain key for 9.x (reduceDepMap: plain
+  # keys, then platform, then version scope), and a closure that does not know
+  # the version takes the scope's, so the walks that precede resolution see the
+  # newest line, 9.
+  "tcl-lang.org" = "^8"
+  ">=9"          = { "tcl-lang.org" = "^9" }
 
   linux = {
     # SC_PATH_X (unix/tcl.m4:1963-2016) finds libX11 and the headers through
@@ -86,7 +116,11 @@ dependencies = {
     "freedesktop.org/fontconfig" = "^2"
     "freetype.org"               = "^2"
 
-    # unix/configure.ac:427-469, see the header. Darwin is Aqua and never uses it.
+    # unix/configure.ac:427-469 (9.x only), see the header. Darwin is Aqua and
+    # never uses it. SHARED BY BOTH LINES, STATED: a platform sub-map cannot
+    # carry a version scope (reduceDepMap's mergeSub copies keys flat), so 8.6
+    # on linux declares a dependency it does not link; the test asserts that
+    # libtk8.6 names no libcups, and 8.6 is not told about it (no switch).
     "openprinting.github.io/cups" = "^2.4"
   }
 
@@ -103,25 +137,32 @@ versions {
   url = "https://sourceforge.net/projects/tcl/files/Tcl/"
 
   # As in tcl-lang.org: 9.0.5 is rc0 and 9.1.0 is not a release, and a version
-  # absent from `sha256` is refused, so `^9` must not resolve to them.
-  # (8.6.x enumerates and is refused for the same reason: Tk 8.6 is not pinned.)
-  ignore = ["/^9\\.0\\.5$/", "/^9\\.1\\./", "/^8\\./"]
+  # absent from `sha256` is refused, so `^9` must not resolve to them. 8.x is
+  # no longer ignored: 8.6.18 is pinned below, and a version absent from
+  # `sha256` is refused whichever line it is on.
+  ignore = ["/^9\\.0\\.5$/", "/^9\\.1\\./"]
 }
 
 distributable {
   url              = "https://downloads.sourceforge.net/project/tcl/Tcl/{{version.raw}}/tk{{version.raw}}-src.tar.gz"
   strip-components = 1
 
-  # 4613019 bytes, recorded with the builder's own fetcher (`zpkb sourcepin
-  # --version 9.0.4 <url>`, zpkb v0.89.0) and confirmed by a second, independent
-  # fetch-and-hash (curl + shasum).
+  # 9.0.4: 4613019 bytes; 8.6.18: 4600288 bytes. Each recorded with the
+  # builder's own fetcher (`zpkb sourcepin --version <v> <url>`; zpkb v0.89.0 for
+  # 9.0.4, v0.92.0 for 8.6.18) and confirmed by a second, independent
+  # fetch-and-hash (curl + shasum; for 8.6.18 from the project's own
+  # `…/Tcl/8.6.18/tk8.6.18-src.tar.gz/download` redirect as well as the
+  # downloads.sourceforge.net URL above).
   #
-  # ⭐ IDENTICAL TO THE DIGEST CPYTHON'S OWN REPOSITORY PINS for Tk 9.0.4:
-  # Mac/BuildScript/build-installer.py:270 `tk_checksum='d7a146d2…01dbb4'`.
-  # tcl-lang.org publishes no checksum and no signature, so there is nothing to
-  # verify beyond that.
+  # ⭐ 9.0.4's DIGEST IS IDENTICAL TO THE ONE CPYTHON'S OWN REPOSITORY PINS for
+  # Tk 9.0.4: Mac/BuildScript/build-installer.py:270 `tk_checksum='d7a146d2…01dbb4'`.
+  # ⚠ 8.6.18 HAS ONLY THE TWO FETCHES: tcl-lang.org publishes no checksum and no
+  # signature (the download page carries no digest, and the SourceForge folder of
+  # 8.6.18 lists archives, a README and the release notes, with no signature or
+  # checksum file), so nothing project-stated exists to verify against.
   sha256 = {
-    "9.0.4" = "d7a146d2917eb8b5cc95276dbf0e3d03c7464d2b19c1675357857c989301dbb4"
+    "9.0.4"  = "d7a146d2917eb8b5cc95276dbf0e3d03c7464d2b19c1675357857c989301dbb4"
+    "8.6.18" = "95cd528a80f5e4bdb557af9b14a7197d6860793a3894e25e7c9fad2ed05d4c3c"
   }
 }
 
@@ -137,14 +178,20 @@ build {
       "--with-tcl={{deps.tcl-lang.org.prefix}}/lib",
 
       # ⛔ THE SWITCHES THE HELP LISTS, EACH NAMED OR REFUSED (`./configure
-      # --help`, 9.0.4, read):
-      #   --enable-shared     default on; python links libtcl9tk9.0.
+      # --help`, 9.0.4 and 8.6.18, read):
+      #   --enable-shared     default on; python links libtcl9tk9.0 (libtk8.6).
       "--enable-shared",
-      #   --enable-load       default on; Tk is itself loaded with `load`.
+      #   --enable-load       default on (both lines); Tk is itself loaded with
+      #                       `load`.
       "--enable-load",
-      #   --enable-zipfs      default on (ZIPFS_BUILD=1 in tkConfig.sh): the Tk
+      #   --enable-zipfs      9.0 only (the 8.6.18 help has no such switch),
+      #                       default on (ZIPFS_BUILD=1 in tkConfig.sh): the Tk
       #                       script library is embedded in libtcl9tk9.0, so
       #                       `package require Tk` needs no lib/tk9.0 lookup.
+      #   --enable-threads    8.6 only (the 9.0 configure has no such switch),
+      #                       default on, and it must match the Tcl 8.6.18 of
+      #                       tcl-lang.org, which is threaded. Kept.
+      #   --enable-64bit-vis  8.6 only, Sparc VIS. Default off. Kept.
       #   --enable-corefoundation default on, darwin only. Kept.
       #   --enable-symbols    default off. --enable-framework default off.
       #   --enable-man-*      documentation layout only.
@@ -154,8 +201,11 @@ build {
       #   --with-encoding     default utf-8. Kept.
       #   --with-x            default on where X is used; passed through
       #                       --x-includes/--x-libraries below.
-      #   --enable-libcups    NAMED on X11 targets below (see the header); on
-      #                       darwin (Aqua) the block does not exist.
+      #   --enable-libcups    9.0 only. NAMED on X11 targets in the script below
+      #                       (see the header; the 8.6.18 configure does not
+      #                       know it, and an option a configure does not know
+      #                       is only WARNED about by autoconf); on darwin
+      #                       (Aqua) the block does not exist.
     ]
 
     # X11 targets: the two NAMED detections, and where X lives. configure.ac's
@@ -166,7 +216,6 @@ build {
       ARGS = [
         "--enable-xft",
         "--enable-xss",
-        "--enable-libcups",
         "--x-includes={{deps.x.org/x11.prefix}}/include",
         "--x-libraries={{deps.x.org/x11.prefix}}/lib",
       ]
@@ -192,7 +241,9 @@ build {
   skip = ["fix-machos"]
 
   script = [
-    "cd unix && PATH=\"$${CUPSBIN:-/nonexistent}:$PATH\" ./configure $ARGS",
+    # --enable-libcups only where Tk knows it (9.x) and where there is an X11
+    # target to name it on (CUPSBIN is set on linux only); see the header.
+    "cd unix && case \"{{version.major}}:$${CUPSBIN:-}\" in 9:?*) X=--enable-libcups ;; *) X= ;; esac && PATH=\"$${CUPSBIN:-/nonexistent}:$PATH\" ./configure $ARGS $X",
     "cd unix && make --jobs {{ hw.concurrency }}",
     "cd unix && make install",
 
@@ -244,12 +295,25 @@ case "$(uname -s)" in
     grep -q -e '-lXss' "$pc" || { echo "tk.pc does not link Xss" >&2; exit 1; }
     # CUPS is read off the library: configure's miss is silent and tkConfig.sh
     # does not record it. libcups is a DT_NEEDED entry and the calls of
-    # unix/tkUnixPrint.c are imported symbols.
-    lib="{{prefix}}/lib/libtcl9tk9.0.so"
-    grep -aq -e 'libcups' "$lib" || { echo "Tk was built WITHOUT libcups (no tk print)" >&2; exit 1; }
-    for f in cupsGetNamedDest cupsCopyDestInfo cupsCreateDestJob cupsStartDestDocument cupsFinishDestDocument; do
-      grep -aq -e "$f" "$lib" || { echo "libtcl9tk9.0 does not import $f" >&2; exit 1; }
-    done
+    # unix/tkUnixPrint.c are imported symbols. That is Tk 9 only: Tk 8.6 has no
+    # print support and must NOT link libcups (its dependency on cups is only
+    # the shared declaration, see `dependencies`).
+    case "{{version.major}}" in
+      9)
+        lib="{{prefix}}/lib/libtcl9tk9.0.so"
+        grep -aq -e 'libcups' "$lib" || { echo "Tk was built WITHOUT libcups (no tk print)" >&2; exit 1; }
+        for f in cupsGetNamedDest cupsCopyDestInfo cupsCreateDestJob cupsStartDestDocument cupsFinishDestDocument; do
+          grep -aq -e "$f" "$lib" || { echo "libtcl9tk9.0 does not import $f" >&2; exit 1; }
+        done
+        ;;
+      *)
+        lib="{{prefix}}/lib/libtk{{version.marketing}}.so"
+        test -f "$lib" || { echo "no $lib" >&2; exit 1; }
+        ! grep -aq -e 'libcups' "$lib" || { echo "Tk 8.6 links libcups, which it has no use for" >&2; exit 1; }
+        # the library 8.6 reads its scripts from, beside it (no zipfs)
+        test -f "{{prefix}}/lib/tk{{version.marketing}}/tk.tcl" || { echo "no lib/tk{{version.marketing}}/tk.tcl" >&2; exit 1; }
+        ;;
+    esac
     ! grep -q -e '-DMAC_OSX_TK=1' "$cfg"
     ;;
 esac
