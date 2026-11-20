@@ -374,13 +374,22 @@ jobs:
       # no closure project names, no fragment completed, so the ceiling holds at
       # 180.
       #
+      # and after openprinting.github.io/cups, the CUPS client library written
+      # from CUPS 2.4.20's own files, with libcups switched on in
+      # tcl-lang.org/tk (go-zpkg/recipes#122 step 1): cups was a fragment
+      # (dependencies only) and is now a whole recipe, so the ceiling goes
+      # 180 → 179. Tk now names it (linux), so the closure gains one standalone
+      # project (zpkb v0.90.0):
+      #
+      #   79 project(s); 73 standalone, 2 fragment(s), 4 absent
+      #   80 project(s); 74 standalone, 2 fragment(s), 4 absent
+      #
       # and after crates.io/semverator, written whole (zpkb v0.90.0, the
-      # recipe-dir/overlay command of go-zpkg/packages#440 step 1):
+      # `-recipe-dir <pantry> -overlay .` command of go-zpkg/packages#440
+      # step 1): one of the four absent, a NEW recipe, so the ceiling holds at
+      # 179.
       #
-      #   79 project(s); 74 standalone, 2 fragment(s), 3 absent
-      #
-      # semverator was one of the four absent; a NEW recipe, so the ceiling
-      # holds at 180.
+      #   80 project(s); 75 standalone, 2 fragment(s), 3 absent
       #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
@@ -394,7 +403,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 180
+          --require-standalone --max-fragments 179
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
