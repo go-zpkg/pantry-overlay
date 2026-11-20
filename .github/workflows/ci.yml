@@ -298,6 +298,14 @@ jobs:
       #
       #   77 project(s); 65 standalone, 3 fragment(s), 9 absent
       #
+      # and after x.org/x11 (libX11), which closes the chain of go-zpkg/recipes
+      # #167. `x.org/util-macros` is still absent, and no recipe of ours
+      # declares it: it comes from the pantry's own recipes for x.org/protocol
+      # x.org/xau and x.org/x11, merged underneath ours key by key
+      # (go-zpkg/zpkb#514):
+      #
+      #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
