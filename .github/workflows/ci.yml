@@ -259,6 +259,10 @@ jobs:
       #
       #   77 project(s); 56 standalone, 3 fragment(s), 18 absent
       #
+      # and the same day, after gnu.org/gcc:
+      #
+      #   77 project(s); 57 standalone, 3 fragment(s), 17 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
