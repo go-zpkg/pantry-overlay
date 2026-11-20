@@ -114,6 +114,18 @@ build {
       # same wherever it is built, which is the property a pinned digest is
       # supposed to carry.
       "--without-posix-acls",
+
+      # ⛔⛔ SELINUX IS AUTO-DETECTED AND SETTLED OFF — carried from
+      # go-zpkg/packages overrides/gnu.org-tar.hcl, which stopped applying when
+      # zpkb v0.90.0 made a standalone recipe the whole recipe (go-zpkg/zpkb#514,
+      # #516). On a builder with libselinux `bin/tar` came out linked against
+      # libselinux.so.1, which nothing in this factory provides (zpkb builder's
+      # soname census, go-zpkg/zpkb#276).
+      #
+      # Still live at 1.35, read in the unpacked source: configure:22350-22355
+      # `--with-selinux` defaults to `with_selinux=maybe` (auto-detection) and
+      # configure:3095 documents `--without-selinux`, at :22434 `with_selinux=no`.
+      "--without-selinux",
       "--mandir={{prefix}}/man",
       "--infodir={{prefix}}/info",
     ]
@@ -156,6 +168,11 @@ test {
     "tar -czf t/a.tgz -C t/in f.txt",
     "mkdir -p t/outz && tar -xzf t/a.tgz -C t/outz",
     "test \"$(cat t/outz/f.txt)\" = roundtrip",
+
+    # ⛔⛔ THE ASSERTION FOR --without-selinux, read off the artifact: a linked
+    # library is a NEEDED entry, a literal string in the ELF dynamic section, so
+    # the binary names `libselinux` if and only if configure found it.
+    "! grep -q libselinux {{prefix}}/bin/tar",
   ]
 }
 
