@@ -70,7 +70,7 @@ distributable {
 
 build {
   dependencies = {
-    "crates.io/cargo-c"               = ">=0.10.10" # meson.build:25 cargo_cbuild_version, :28 the program
+    "github.com/lu-zero/cargo-c"      = ">=0.10.10" # meson.build:25 cargo_cbuild_version, :28 the program
     "freedesktop.org/pkg-config"      = "^0.29"
     "gnome.org/gobject-introspection" = 1
     "mesonbuild.com"                  = "^1"
@@ -232,9 +232,9 @@ provenance {
 were read from the tarball, the digest was confirmed by upstream's sha256sum and
 a second fetch, and `zpkb lint` was run.
 
-⚠ crates.io/cargo-c is NOT a recipe of this tree: `cargo-cbuild` is a hard
-requirement (meson.build:28), so this recipe resolves it from the pantry, like
-gnome.org/gobject-introspection. If neither can be had, the whole project is
+⚠ github.com/lu-zero/cargo-c is still a FRAGMENT of this tree (lint lists it):
+`cargo-cbuild` is a hard requirement (meson.build:28), so this recipe resolves
+it from the pantry underneath, like gnome.org/gobject-introspection. If neither can be had, the whole project is
 unbuildable; there is no switch that removes them.
 
 ⚠ gnome.org/pango, gnome.org/gdk-pixbuf and cairographics.org are likewise
