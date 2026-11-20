@@ -281,6 +281,11 @@ jobs:
       #
       #   77 project(s); 61 standalone, 3 fragment(s), 13 absent
       #
+      # and after x.org/libpthread-stubs, which no project of this closure names
+      # until libxcb is ours, so the line does not move:
+      #
+      #   77 project(s); 61 standalone, 3 fragment(s), 13 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
