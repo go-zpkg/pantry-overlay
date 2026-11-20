@@ -315,6 +315,11 @@ jobs:
       #
       #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
       #
+      # and after gnu.org/gperf, which fontconfig needs to build and which the
+      # closure does not name either:
+      #
+      #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
