@@ -250,6 +250,11 @@ jobs:
       #
       #   77 project(s); 54 standalone, 3 fragment(s), 20 absent
       #
+      # and the same day, after gnu.org/libidn2 — the first ABSENT project
+      # written, so the fragment count and the ceiling below do not move:
+      #
+      #   77 project(s); 55 standalone, 3 fragment(s), 19 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
