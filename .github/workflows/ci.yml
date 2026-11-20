@@ -290,6 +290,10 @@ jobs:
       #
       #   77 project(s); 62 standalone, 3 fragment(s), 12 absent
       #
+      # and after x.org/xau and x.org/xdmcp, written together:
+      #
+      #   77 project(s); 64 standalone, 3 fragment(s), 10 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
