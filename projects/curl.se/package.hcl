@@ -386,7 +386,8 @@ provenance {
     # (a runtime `SSL_CERT_FILE` env, which the CA flags above rely on), and
     # that its build fetches the bundle with `curl -k` from inside the build
     # script — TLS verification disabled, no digest — which is
-    # go-zpkg/zpkb#487's shape and why ca-certs has no recipe of ours yet.
+    # go-zpkg/zpkb#487's shape. Our own curl.se/ca-certs (go-zpkg/recipes#212)
+    # pins the dated bundle with `extract = false` (zpkb v0.92.0) instead.
     "pkgxdev/pantry projects/curl.se/ca-certs/package.yml",
     # Read for what upstream's libpsl depends on, which is what made declaring
     # it look expensive. Our own libpsl recipe is written from libpsl's files.
