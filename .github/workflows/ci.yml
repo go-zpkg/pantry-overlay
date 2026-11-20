@@ -339,6 +339,16 @@ jobs:
       #
       #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
       #
+      # and after tcl-lang.org (Tcl core), the monolith split of go-zpkg/recipes
+      # #122: tcl-lang.org was a fragment (dependencies and versions only) and is
+      # now a whole recipe, so the tree's ceiling goes 181 → 180 (lint: "at the
+      # stated ceiling of 180"). python.org needed no change of the ceiling: it
+      # was already standalone. Measured from this checkout with zpkb v0.89.0,
+      # `closure -build -require-standalone -overlay . go-zpkg/base-toolchain`
+      # printed "50 project(s); 49 standalone in the overlay, 1 fragment(s) (llvm.org),
+      # 0 absent" — a different closure root from the 77-project lines above, so
+      # not comparable with them.
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
@@ -352,7 +362,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 181
+          --require-standalone --max-fragments 180
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
