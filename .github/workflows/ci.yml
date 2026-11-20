@@ -349,18 +349,24 @@ jobs:
       # 0 absent" — a different closure root from the 77-project lines above, so
       # not comparable with them.
       #
+      # and after tcl-lang.org/tk (Tk 9.0.4, X11 with Xft and XScreenSaver on
+      # linux, Aqua on darwin), a NEW recipe no closure project names yet, so
+      # the ceiling holds at 180.
+      #
       # ⛔⛔ FROM zpkb v0.90.0 THE LINES ARE NOT COMPARABLE WITH THE ONES ABOVE
       # EITHER. go-zpkg/zpkb#514 (v0.90.0, artifact v0.90.0): a standalone recipe
       # of ours is now the WHOLE recipe, so the closure stops following the
       # upstream keys that were merged under ours. Every line above that counted
       # through a merged recipe counted upstream's dependencies too. Measured on
-      # main before this change, with v0.90.0: 73 project(s); 64 standalone,
-      # 3 fragment(s), 6 absent.
+      # main at a07d6ef (Tcl, Tk and the X11 chain in), with v0.90.0:
+      #
+      #   76 project(s); 70 standalone, 2 fragment(s), 4 absent
       #
       # and after curl.se declared libpsl, with gnu.org/libunistring and
-      # rockdaboot.github.io/libpsl written (zpkb v0.90.0):
+      # rockdaboot.github.io/libpsl written (zpkb v0.90.0): three more
+      # projects, all standalone, and nothing more absent:
       #
-      #   62 project(s); 56 standalone, 2 fragment(s), 4 absent
+      #   79 project(s); 73 standalone, 2 fragment(s), 4 absent
       #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
