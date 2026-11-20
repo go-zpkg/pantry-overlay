@@ -430,6 +430,46 @@ PY
 EOT
     },
 
+    # ⛔⛔ THE WITNESS #122 ASKED FOR, BEFORE THE tcl-lang.org MONOLITH IS SPLIT.
+    # `import tkinter` above only proves `_tkinter` exists. This proves the Tcl
+    # library behind it is LOADED and that Tk was compiled in:
+    #
+    #   tkinter.Tcl()            creates a Tcl interpreter through _tkinter —
+    #                            needs libtcl at run time, NO display
+    #   _tkinter.TCL_VERSION /   the versions _tkinter.c was COMPILED against;
+    #   _tkinter.TK_VERSION      TK_VERSION exists only because configure.ac:4636-4643
+    #                            link-tested <tk.h> too (a build with core Tcl
+    #                            alone has no `_tkinter` at all, :8544-8545)
+    #   info patchlevel          the library actually loaded must be the one
+    #                            compiled against
+    #
+    # ⚠ `package require Tk` is NOT run: it opens a display. On a headless X
+    # host it raises, and on a darwin Aqua Tk with no window server it can hang
+    # (measured on a workstation: the system tclsh waited past two minutes), so
+    # a Tk() here would make the test depend on the builder's session. A real
+    # `Tk()` is attempted only where DISPLAY is set on a non-darwin host.
+    #
+    # ⚠ WRITTEN, NOT EXECUTED: CPython's build is a factory job; this verdict
+    # comes from the next factory run, not from a session.
+    {
+      run = <<EOT
+set -e
+"{{prefix}}/bin/python3" - <<'PY'
+import os, sys, tkinter, _tkinter
+t = tkinter.Tcl()
+patch = t.eval("info patchlevel")
+assert patch.startswith(_tkinter.TCL_VERSION + "."), (patch, _tkinter.TCL_VERSION)
+assert _tkinter.TK_VERSION, "_tkinter was built without Tk"
+assert tkinter.TkVersion >= 8.5, tkinter.TkVersion
+print("tkinter: Tcl", patch, "Tk", _tkinter.TK_VERSION)
+if sys.platform != "darwin" and os.environ.get("DISPLAY"):
+    root = tkinter.Tk()
+    assert root.tk.call("tk", "windowingsystem") == "x11"
+    root.destroy()
+PY
+EOT
+    },
+
     # pip exists because --with-ensurepip=install was passed; if that is ever
     # dropped, this says so rather than leaving a `provides` entry dangling.
     "\"{{prefix}}/bin/pip3\" --version",
