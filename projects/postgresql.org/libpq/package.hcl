@@ -48,8 +48,17 @@ distributable {
   # its tarballs (the .asc URL answers a 146-byte error page); it publishes
   # postgresql-18.7.tar.bz2.sha256 beside them, on the same host. That file
   # said 441dfae4… and so did two independent fetches of the tarball.
+  #
+  # ⚠ 19.0 ADDED 2026-11-20 (go-zpkg/recipes#208), a major release, pinned
+  # after checking the build still applies: 23982241 bytes, digest equal to
+  # postgresql-19.0.tar.bz2.sha256. In 19.0's tarball ./configure is still
+  # shipped, every --with/--without in ARGS exists with the same default, and
+  # the four directories the script makes (src/include, src/common,
+  # src/interfaces/libpq, src/bin/pg_config) are all present. The configure.ac
+  # line numbers cited below are 18.7's (~+40 in 19.0). Not built.
   sha256 = {
     "18.7" = "441dfae4280cae3e0425e5f876f80559fb0731c140f1aae22b3e5a54d0411bfd"
+    "19.0" = "a89fd70efbad6a08c7dbed8d4872e3af30170d9e5ca9dc7906523be95b4e692d"
   }
 }
 

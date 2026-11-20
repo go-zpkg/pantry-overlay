@@ -42,8 +42,13 @@ distributable {
 
   # 2699243 bytes. Recorded with `zpkb sourcepin` (v0.92.0) and confirmed by a
   # second, independent fetch: curl on the same URL, shasum -a 256.
+  #
+  # 0.4.4 (2026-11-20, go-zpkg/recipes#208): 2699324 bytes, the same two
+  # paths, the same answer. Pinned because `versions` resolves it first and an
+  # unpinned newest makes the default build a refusal.
   sha256 = {
     "0.4.3" = "1dc891463c31eaa3b9d836eb922448c8f550ae5436f2a5e47ab42c857b5f5cd1"
+    "0.4.4" = "e28ac242644da7271f8a290667dbaf4a3dd119617c583d8716aab8669468cae6"
   }
 }
 

@@ -108,7 +108,12 @@ distributable {
   # reached). Measured, not assumed: `zpkb versions` lists 7.3.4 first and
   # 7.2.15 sixth. So the newest resolvable version is pinned as well as the one
   # the set asks for, and both are signature-verified below.
+  #
+  # 7.3.5 added 2026-11-20 (go-zpkg/recipes#208): 7.3.4 was the newest when
+  # this was written, and three days later it was not — the default build was
+  # a refusal. Verified the same way; the measurement is in provenance.
   sha256 = {
+    "7.3.5"  = "8f293f83d54f0b7b9be56863ebc5e4ea79d73e530b4ae55c572be97ef39f0990"
     "7.3.4"  = "b11b6df8295e8e991ff040b71aaa4994a8b55caa23b6b092907f195b5840fd1f"
     "7.2.15" = "d0f6b1d7324c937ccaeb5c4ca7084bfcf71db2edb3e2d3a31f0ad83a681809ab"
   }
@@ -331,6 +336,15 @@ Re-run on 2026-11-19 against v0.85.0, once per pinned version:
 Both pins, same signer, and both digests came out of the tool equal to what was
 already written here — so the earlier measurement and this one agree, which is
 the only reason to trust either.
+
+Added 2026-11-20 (go-zpkg/recipes#208), same command, key from
+https://github.com/gregkh.gpg (1 key read, selected by the fingerprint):
+
+  archive    linux-7.3.5.tar.xz    162459524 bytes
+    sha256   8f293f83d54f0b7b9be56863ebc5e4ea79d73e530b4ae55c572be97ef39f0990   <- what this recipe PINS
+  signature  GOOD over the decompressed tar (linux-7.3.5.tar.sign),
+             signed at 2026-11-17T10:18:09Z
+    signer   647F28654894E3BD457199BE38DBBDC86092693E
 
 ⭐ AND THE A/B IS WHAT MAKES IT A MEASUREMENT RATHER THAN A HOPE. The same
 command without the flag, same key, same signature URL, same archive:

@@ -57,8 +57,13 @@ distributable {
   # morning), so the corroboration here is the third party's record rather than
   # the author's own file. The schema's `sha` field is the place for that file
   # once it is reachable, and it would be the stronger warrant.
+  #
+  # 1.11.1 (2026-11-20, go-zpkg/recipes#208): fetched with `zpkb sourcepin`,
+  # 553363 bytes, and this time corroborated by the AUTHOR's own file —
+  # lz4-1.11.1.tar.gz.sha256 beside the asset answered and says the same digest.
   sha256 = {
     "1.11.0" = "247e5fa64da5f7b75ee3dd3bed484076396c9ebe8254d9ccf693eb62800c5e26"
+    "1.11.1" = "683fed08a844ad012196381e40badf80c0bbe4962959761416d41c9e67d77ec7"
   }
 }
 
