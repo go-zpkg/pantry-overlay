@@ -349,6 +349,10 @@ jobs:
       # 0 absent" — a different closure root from the 77-project lines above, so
       # not comparable with them.
       #
+      # and after tcl-lang.org/tk (Tk 9.0.4, X11 with Xft and XScreenSaver on
+      # linux, Aqua on darwin), a NEW recipe no closure project names yet, so
+      # the ceiling holds at 180.
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in

@@ -87,7 +87,18 @@ dependencies = {
   # `Cflags: -I${includedir}` and `unix/Makefile.in:828-830` installs that
   # `tcl.pc`, so the recipe's own includedir reaches pkg-config and pkg-config
   # reaches CPython.
-  "tcl-lang.org" = "=8.6.16"
+  #
+  # ⭐ #122 STEP 3, THE PIN REPLACED BY WHAT IT WAS FOR: the monolith is split,
+  # so the dependency is now NAMED PER LIBRARY — `tcl-lang.org` (libtcl, tcl.pc)
+  # and `tcl-lang.org/tk` (libtcl9tk9.0, tk.pc, which is what configure.ac:4607
+  # `tcl >= 8.5.12 tk >= 8.5.12` needs) — at `^9`, the line CPython 3.15.2 itself
+  # ships (PCbuild/get_externals.bat:60,83; Mac/BuildScript/build-installer.py:
+  # 267, both 9.0.4). The "9.0.2 introduced a build issue on darwin" note was
+  # about the tclsh install_name being unusable before install; the Tcl recipe
+  # stages around it and builds 9.0.4 on darwin. `_tkinter.c` has the 9.x arms
+  # (`#if TK_MAJOR_VERSION >= 9`, Tcl_Size).
+  "tcl-lang.org"    = "^9"
+  "tcl-lang.org/tk" = "^9"
 
   "tukaani.org/xz" = 5
   "zlib.net"       = "=1.3.1"
