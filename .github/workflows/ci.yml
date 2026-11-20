@@ -384,6 +384,13 @@ jobs:
       #   79 project(s); 73 standalone, 2 fragment(s), 4 absent
       #   80 project(s); 74 standalone, 2 fragment(s), 4 absent
       #
+      # and after crates.io/semverator, written whole (zpkb v0.90.0, the
+      # `-recipe-dir <pantry> -overlay .` command of go-zpkg/packages#440
+      # step 1): one of the four absent, a NEW recipe, so the ceiling holds at
+      # 179.
+      #
+      #   80 project(s); 75 standalone, 2 fragment(s), 3 absent
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
