@@ -118,10 +118,12 @@ provides = [
 
 build {
   dependencies = {
-    # llvm-config and the C/C++ compiler. llvm.rs:807 insists on >= 21, and 22.1.8
-    # (llvm.org, go-zpkg/recipes#201) and the 23.x the registry also holds both
-    # satisfy it; 1.100.0 itself bundles 23.1 (src/llvm-project/cmake/Modules/
-    # LLVMVersion.cmake:4-7).
+    # llvm-config and the C/C++ compiler. llvm.rs:807 insists on >= 21 and
+    # nothing in llvm.rs, rustc_llvm/build.rs or LLVMWrapper.h (read at 1.100.0)
+    # names an upper bound; llvm.org's two pinned versions, 22.1.8 and 23.1.6
+    # (go-zpkg/recipes#201 and its 23.1.6 follow-up), both satisfy ">=21", and
+    # the resolver now picks 23.1.6, the same 23.1 series 1.100.0 itself bundles
+    # (src/llvm-project/cmake/Modules/LLVMVersion.cmake:4-7).
     "llvm.org" = ">=21"
 
     # bootstrap.py is python (sanity.rs:171-175 looks for python3) and shells
