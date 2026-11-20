@@ -294,6 +294,10 @@ jobs:
       #
       #   77 project(s); 64 standalone, 3 fragment(s), 10 absent
       #
+      # and after x.org/xcb (libxcb):
+      #
+      #   77 project(s); 65 standalone, 3 fragment(s), 9 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
