@@ -242,6 +242,15 @@ jobs:
       #
       #   77 project(s); 52 standalone, 5 fragment(s), 20 absent
       #
+      # and 2026-11-20, after curl.se:
+      #
+      #   77 project(s); 53 standalone, 4 fragment(s), 20 absent
+      #
+      # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
+      # declaring it; declaring it measured 93, with sixteen added projects
+      # Haskell among them. That choice is a stated downgrade and lives in
+      # projects/curl.se/package.hcl, where it can be reversed.
+      #
       # ⚠ The two lines are not strictly comparable: 2026-11-15 was counted by
       # hand over a 70-project closure, 2026-11-19 by the tool over 77, and the
       # closure grows as recipes declare what they really need. They point the
@@ -250,7 +259,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 184
+          --require-standalone --max-fragments 183
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
