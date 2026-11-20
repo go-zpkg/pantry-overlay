@@ -71,7 +71,11 @@ build {
 
 runtime {
   env = {
-    TCLLIBPATH = "{{prefix}}/lib"
+    # ⛔ A TCL LIST, CHAINED: TCLLIBPATH is a Tcl list (whitespace-separated),
+    # not a colon path, and zpkgx emits each package's value verbatim in closure
+    # order, so a value without `$TCLLIBPATH` is overwritten by the next package's.
+    # Measured with tclsh 9.0.4: "a:b" is ONE auto_path element, "a b" two.
+    TCLLIBPATH = "{{prefix}}/lib $TCLLIBPATH"
   }
 }
 

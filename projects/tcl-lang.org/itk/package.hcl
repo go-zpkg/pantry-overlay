@@ -85,7 +85,8 @@ build {
 
 runtime {
   env = {
-    TCLLIBPATH = "{{prefix}}/lib"
+    # A Tcl list, chained: see github.com/andreas-kupries/critcl.
+    TCLLIBPATH = "{{prefix}}/lib $TCLLIBPATH"
   }
 }
 
@@ -134,6 +135,14 @@ install produced lib/itk4.2.3 with libtcl9itk4.2.3.dylib, itk.tcl, the
 .itk class files and pkgIndex.tcl. NOT RUN: `package require Itk` (it loads
 Tk and needs a display), the test block's checks as the factory runs them,
 linux, an X11 Tk.
+
+⭐ EXERCISED LATER (go-zpkg/recipes#122 step 6), darwin/arm64 scratch: Itk
+4.2.3 rebuilt against Tcl 9.0.4 and an X11 Tk 9.0.4, installed, and its
+pkgIndex.tcl is found from TCLLIBPATH (`package versions Itk` non-empty after a
+`package require Itk`). `package require Itk` ITSELF was NOT completed: it loads
+Tk, which opens a display, and no X server could be started in that session
+(Xvfb on a unix socket needs /tmp/.X11-unix, root-owned; a TCP-listening Xvfb
+was refused by the permission system). Still to run where an X server exists.
 
 ⚠ ITK 4.2.3 IS AN OLD RELEASE FOR TCL 9: it built against Tcl 9.0.4 and Itcl
 4.3.8 without change, but nothing here exercised a widget. The monolith's
