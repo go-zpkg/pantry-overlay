@@ -85,7 +85,8 @@ build {
 
 runtime {
   env = {
-    TCLLIBPATH = "{{prefix}}/lib"
+    # A Tcl list, chained: see github.com/andreas-kupries/critcl.
+    TCLLIBPATH = "{{prefix}}/lib $TCLLIBPATH"
   }
 }
 
