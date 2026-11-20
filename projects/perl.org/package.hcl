@@ -305,6 +305,10 @@ So the rung is the same as gnome.org/libxml2's and nghttp2.org's: the checksum
 file establishes that we fetched what CPAN published, not that nobody else
 could have published it. The checksum sits on the same host as the archive.
 
+Filed as go-zpkg/zpkb#510: sourcepin verifying a sigstore bundle against a
+NAMED identity and issuer would lift this recipe a rung — and python.org's,
+whose 3.15.2 publishes a .sigstore and no .asc at all.
+
 ⛔ NOT BUILT. No session here can run the factory. What is established is the
 inputs, each traced to a line in perl's own files, and a test written to fail
 on each choice that could silently go the other way.
