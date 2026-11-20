@@ -6,7 +6,10 @@
 # ⛔ WRITTEN FROM CUPS 2.4.20'S OWN FILES (go-zpkg/packages#431), read out of the
 # published source tarball, and BUILT AND INSTALLED in a scratch directory on
 # darwin/arm64 (the darwin flag set below; its outcomes read back from the
-# install). NOT built on linux and NOT built by the factory.
+# install) and on linux/aarch64 (a debian:trixie container, the linux flag set
+# below, with avahi.org built there from its own recipe's flags and Debian's
+# libkrb5 and OpenSSL standing in for the declared kerberos.org and openssl.org).
+# The test block's linux half ran there. NOT built by the factory.
 #
 # ⭐ WHAT IS BUILT, AND WHY NOT THE SCHEDULER. `--with-components=core`
 # (cups-common.m4:456-492) builds libcups, libcupsimage, the `tools` directory
@@ -43,26 +46,33 @@
 #            is dragged onto a macOS client. GnuTLS is REFUSED: no recipe here.
 #   DNS-SD   `--with-dnssd` defaults to `yes` (cups-dnssd.m4:12-13): mDNSResponder,
 #            else Avahi if pkg-config finds it. darwin NAMED `mdnsresponder`
-#            (dns_sd.h is in the system, :33-41). linux REFUSED, `no`: Avahi is
-#            not a recipe of this tree or of the pantry, and its client needs a
-#            running avahi-daemon and libdbus. WHAT THAT COSTS, STATED: on linux
-#            libcups cannot browse or resolve `.local` DNS-SD names
-#            (cupsEnumDests, httpResolveURI in cups/dest.c and
-#            cups/http-support.c under HAVE_AVAHI), and `ippfind` is not built
-#            (IPPFIND_BIN is only set with DNS-SD, :41,:61,:88). Printing to a
-#            queue on the host's scheduler, which is what `tk print` does
-#            (cupsGetNamedDest, cupsCreateDestJob in Tk's unix/tkUnixPrint.c), does
-#            not use it. A gap to close by an Avahi recipe, not a decision that
-#            discovery is unwanted.
+#            (dns_sd.h is in the system, :33-41). linux NAMED `avahi`
+#            (:76-100): the declared `avahi.org` (its client library only; the
+#            avahi-daemon is the HOST's, reached over the host's system D-Bus,
+#            see that recipe's header). `--with-dnssd=avahi` is FATAL when
+#            pkg-config does not find avahi-client (:95-97), so a builder
+#            cannot silently turn it off. WHAT IT GIVES: libcups browses and
+#            resolves `.local` DNS-SD names (cupsEnumDests, httpResolveURI in
+#            cups/dest.c and cups/http-support.c under HAVE_AVAHI), and `ippfind`
+#            is built (IPPFIND_BIN is set with DNS-SD, :88). WHAT IT STILL
+#            COSTS, STATED: with no avahi-daemon on the host, avahi_client_new
+#            answers "Daemon not running" and discovery finds nothing; nothing
+#            here starts one. Printing to a queue on the host's scheduler, which
+#            is what `tk print` does (cupsGetNamedDest, cupsCreateDestJob in Tk's
+#            unix/tkUnixPrint.c), does not use it.
 #   GSSAPI   `--enable-gssapi` defaults OFF and is marked deprecated
 #            (cups-gssapi.m4:15,20), and the pantry's `kerberos.org` dependency
 #            was therefore never linked. darwin NAMED `--enable-gssapi`: the
 #            Kerberos and GSS frameworks are weak-linked from the system
-#            (:22-32) and need no dependency. linux REFUSED: `kerberos.org` is
-#            a dependencies-only fragment here, not a recipe (MIT krb5 is not
-#            written), and declaring it would make this recipe unresolvable.
-#            COST: Kerberos (Negotiate) authentication to a remote CUPS server
-#            from linux. A gap, to close with a krb5 recipe.
+#            (:22-32) and need no dependency. linux NAMED `--enable-gssapi`
+#            against the declared `kerberos.org` (MIT krb5, a whole recipe):
+#            the `krb5-config` is looked up with AC_PATH_TOOL (:21) on the
+#            builder's PATH, so KRB5CONFIG is passed as the declared
+#            package's own, and `--cflags gssapi` / `--libs gssapi` (:55-57)
+#            then name its headers and libgssapi_krb5. It is FATAL when no
+#            krb5-config is found (:51-52). WHAT IT GIVES: Kerberos (Negotiate)
+#            authentication to a remote CUPS server from linux
+#            (cups/auth.c, HAVE_GSSAPI).
 #   PAM      `--disable-pam` (cups-pam.m4:21): used by cupsd and ippeveprinter
 #            (tools/Makefile:151 PAMLIBS) for password checks; the scheduler is
 #            not built and ippeveprinter's authentication is not wanted.
@@ -79,9 +89,10 @@
 #            NO switch to turn them off. They only add a define and link flags
 #            for the scheduler (neither macro occurs in cups/ or tools/), but a
 #            probe that depends on the builder is closed anyway: PKG_CONFIG_LIBDIR
-#            below lets pkg-config see ONLY the declared OpenSSL, so every one of
-#            these probes (and libusb, dbus, systemd, avahi, gnutls) answers no
-#            on every builder. The test then lists what libcups links.
+#            below lets pkg-config see ONLY the declared OpenSSL and Avahi (on
+#            linux), so every one of these probes (and libusb, dbus, systemd,
+#            gnutls) answers no on every builder. The test then lists what
+#            libcups links.
 #   libdir   cups-directories.m4:95-102 picks `lib64` on a linux builder that
 #            has /usr/lib64, `lib` otherwise: a host-dependent layout. Pinned to
 #            `{{prefix}}/lib`.
@@ -126,9 +137,14 @@ dependencies = {
   # declared, passed by path, and read back by the test.
   "zlib.net" = "^1.2"
 
-  # cups-tls.m4:25-65 on linux; darwin uses SecureTransport.
+  # cups-tls.m4:25-65 on linux; darwin uses SecureTransport. avahi.org is the
+  # DNS-SD client (cups-dnssd.m4:76-100) and kerberos.org the GSSAPI one
+  # (cups-gssapi.m4:49-59), both linux only: darwin has mDNSResponder and the
+  # Kerberos and GSS frameworks in the system.
   linux = {
-    "openssl.org" = "^3"
+    "openssl.org"  = "^3"
+    "avahi.org"    = "^0.8"
+    "kerberos.org" = "^1.22"
   }
 }
 
@@ -183,10 +199,22 @@ build {
         "--sysconfdir=/etc",
         "--localstatedir=/var",
         "--with-tls=openssl",
-        "--with-dnssd=no",
+        "--with-dnssd=avahi",
+        "--enable-gssapi",
       ]
-      # See the header: only the declared OpenSSL is visible to pkg-config.
-      PKG_CONFIG_LIBDIR = "{{deps.openssl.org.prefix}}/lib/pkgconfig"
+      # See the header: only the declared OpenSSL and Avahi are visible to
+      # pkg-config. avahi-client.pc names no D-Bus (its Libs are -lavahi-common
+      # -lavahi-client), so libcups links no libdbus; the Avahi libraries carry
+      # their own run path to it.
+      PKG_CONFIG_LIBDIR = "{{deps.openssl.org.prefix}}/lib/pkgconfig:{{deps.avahi.org.prefix}}/lib/pkgconfig"
+
+      # cups-gssapi.m4:21 takes the first krb5-config of the PATH; this is the
+      # declared kerberos.org's.
+      KRB5CONFIG = "{{deps.kerberos.org.prefix}}/bin/krb5-config"
+
+      # The run paths that let libcups, ippfind and ipptool find the Avahi and
+      # Kerberos libraries they link (the zlib -L stays; DSOFLAGS is $LDFLAGS).
+      LDFLAGS = "-L{{deps.zlib.net.prefix}}/lib -L{{deps.avahi.org.prefix}}/lib -L{{deps.kerberos.org.prefix}}/lib -Wl,-rpath,{{deps.avahi.org.prefix}}/lib -Wl,-rpath,{{deps.kerberos.org.prefix}}/lib"
     }
 
     darwin = {
@@ -217,11 +245,13 @@ build {
 }
 
 # Makefile:174-179 installs cups-config and cups.pc; tools/Makefile installs the
-# rest. ippfind is built only with DNS-SD, so it is not promised.
+# rest. ippfind is built only with DNS-SD (cups-dnssd.m4:88, :41), which both
+# platforms now have.
 provides = [
   "bin/cups-config",
   "bin/ipptool",
   "bin/ippeveprinter",
+  "bin/ippfind",
 ]
 
 test {
@@ -278,6 +308,7 @@ EOT
     "test -f \"{{prefix}}/include/cups/cups.h\"",
     "test -f \"{{prefix}}/lib/pkgconfig/cups.pc\"",
     "test \"$(\"{{prefix}}/bin/cups-config\" --version)\" = \"{{version.raw}}\"",
+    "test -x \"{{prefix}}/bin/ippfind\"",
     "\"{{prefix}}/bin/ipptool\" --version > ver.txt && grep -q \"CUPS v{{version.raw}}\" ver.txt",
     "PKG_CONFIG_PATH=\"{{prefix}}/lib/pkgconfig\" pkg-config --exact-version={{version.raw}} cups",
 
@@ -295,17 +326,21 @@ case "$(uname -s)" in
     refuse="libssl libcrypto libgnutls libavahi libdbus libpam libusb libwrap libacl libpaper libapparmor libsystemd"
     sock="/private/var/run/cupsd"
     sroot="/private/etc/cups"
-    test -x "$root/bin/ippfind" || { echo "ippfind missing: DNS-SD was not built on darwin" >&2; exit 1; }
     ;;
   *)
     lib="$root/lib/libcups.so.2"
-    want="libssl.so libcrypto.so libz.so"
-    refuse="libgnutls libavahi libdbus libpam libusb libwrap libacl libpaper libapparmor libsystemd libgssapi libkrb5"
+    # Linux: OpenSSL, zlib, and now Avahi's client (DNS-SD) and MIT Kerberos'
+    # GSSAPI, each named by the library and by the symbol that uses it.
+    want="libssl.so libcrypto.so libz.so libavahi-client.so libavahi-common.so libgssapi_krb5.so avahi_client_new avahi_service_browser_new gss_init_sec_context"
+    refuse="libgnutls libdbus libpam libusb libwrap libacl libpaper libapparmor libsystemd"
     sock="/var/run/cups/cups.sock"
     sroot="/etc/cups"
-    ! test -e "$root/bin/ippfind" || { echo "ippfind was built: DNS-SD is on" >&2; exit 1; }
+    # ippfind is the DNS-SD tool: it must name the Avahi client and must have
+    # been linked to it, not merely built.
+    grep -aq -e "libavahi-client.so" "$root/bin/ippfind" || { echo "ippfind does not link libavahi-client" >&2; exit 1; }
     ;;
 esac
+test -x "$root/bin/ippfind" || { echo "ippfind missing: DNS-SD was not built" >&2; exit 1; }
 test -f "$lib"
 for w in $want; do
   grep -aq -e "$w" "$lib" || { echo "libcups does not name $w" >&2; exit 1; }
@@ -330,6 +365,25 @@ cc -x c $FIXTURE -x none -o probe "-DWANT_SOCK=\"$sock\"" -I{{prefix}}/include -
 CUPS_SERVERROOT="$PWD/no-such-root" HOME="$PWD" LD_LIBRARY_PATH="{{prefix}}/lib:$${LD_LIBRARY_PATH:-}" DYLD_LIBRARY_PATH="{{prefix}}/lib:$${DYLD_LIBRARY_PATH:-}" ./probe
 EOT
     },
+
+    # ⭐ linux: THE INSTALLED ippfind REACHES THE AVAHI CLIENT. With the system
+    # bus pointed at a socket nobody listens on (and no daemon on this
+    # machine assumed), ippfind (tools/ippfind.c:1141-1148) calls
+    # avahi_client_new, which fails, and ippfind says so and exits
+    # IPPFIND_EXIT_BONJOUR = 2 (:48). A binary linked without Avahi would not
+    # print that message, and one whose libraries are not found would not start.
+    {
+      run = <<EOT
+set -eu
+case "$(uname -s)" in Darwin) exit 0 ;; esac
+set +e
+DBUS_SYSTEM_BUS_ADDRESS="unix:path=$PWD/no-such-bus" LC_ALL=C LD_LIBRARY_PATH="{{prefix}}/lib:$${LD_LIBRARY_PATH:-}" "{{prefix}}/bin/ippfind" _ipp._tcp > ippfind.out 2> ippfind.err
+st=$?
+set -e
+test "$st" = 2 || { echo "ippfind exited $st, wanted 2 (IPPFIND_EXIT_BONJOUR)" >&2; cat ippfind.err >&2; exit 1; }
+grep -q "Unable to use Bonjour" ippfind.err || { echo "ippfind did not reach the Avahi client" >&2; cat ippfind.err >&2; exit 1; }
+EOT
+    },
   ]
 }
 
@@ -351,6 +405,10 @@ provenance {
     "cups/Makefile",                     # :289-320 install-libs; :372 darwin install_name is libdir/libcups.2.dylib
     "Makefile",                          # :160-217 install targets; :174-179 cups-config and cups.pc
     "tools/Makefile",                    # :151, :191 DNSSDLIBS and PAMLIBS only for ippeveprinter and ippfind
+    "Makedefs.in",                       # :97, :170, :176 LIBGSSAPI and DNSSDLIBS are in LIBS, so libcups links them
+    "tools/ippfind.c",                   # :46-50 exit codes; :1133-1148 avahi_client_new and the "Unable to use Bonjour" message
+    "cups/http-private.h",               # :41-52, :269-287 HAVE_GSSAPI
+    "https://github.com/go-zpkg/recipes/blob/main/projects/avahi.org/package.hcl",  # the Avahi client's own recipe: its pkg-config file, its run path, the daemon decision
     "cups/tls-darwin.c",                 # :1269 the call that does not compile
     "cups/cups-private.h",               # :295 the two-argument declaration
     "cups-config.in",                    # :99-109 --ldflags and --libs print only -L and -lcups
@@ -395,9 +453,17 @@ installed, `config.h` had HAVE_CDSASSL, HAVE_MDNSRESPONDER and HAVE_GSSAPI and
 no HAVE_OPENSSL, HAVE_DBUS, HAVE_LIBUSB or HAVE_LIBAPPARMOR, and libcups
 linked only system libraries. The installed binaries carried an invalid
 signature (the install step modified them) and were killed on launch until
-re-signed: the factory's Mach-O fixup is what is relied on for that. NOT RUN:
-the linux flag set (OpenSSL through pkg-config, DNS-SD off) and the test block
-as the factory executes it.
+re-signed: the factory's Mach-O fixup is what is relied on for that.
+
+BUILT HERE ON LINUX/AARCH64 TOO (debian:trixie container): avahi.org built from
+its own recipe's flags, Debian's libkrb5-dev (its krb5-config named by
+KRB5CONFIG, the same mechanism as the declared one) and Debian's OpenSSL and
+zlib standing in. The linux flag set above configured with HAVE_AVAHI,
+HAVE_DNSSD, HAVE_GSSAPI and HAVE_OPENSSL, libcups linked libavahi-client,
+libavahi-common and libgssapi_krb5, `ippfind` was built, and the linux half of
+the test block passed. NOT RUN: the factory, the declared kerberos.org and
+openssl.org (their own recipes' tests ran elsewhere), a real avahi-daemon, a
+KDC against libcups, x86-64.
 
 ⚠ Tk on darwin is Aqua and never uses libcups (unix/configure.ac:430, the whole
 block sits inside `tk_aqua = no`), so tcl-lang.org/tk declares this recipe on
