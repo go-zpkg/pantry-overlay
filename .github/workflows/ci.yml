@@ -353,10 +353,24 @@ jobs:
       # linux, Aqua on darwin), a NEW recipe no closure project names yet, so
       # the ceiling holds at 180.
       #
-      # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
-      # declaring it; declaring it measured 93, with sixteen added projects
-      # Haskell among them. That choice is a stated downgrade and lives in
-      # projects/curl.se/package.hcl, where it can be reversed.
+      # ⛔⛔ FROM zpkb v0.90.0 THE LINES ARE NOT COMPARABLE WITH THE ONES ABOVE
+      # EITHER. go-zpkg/zpkb#514 (v0.90.0, artifact v0.90.0): a standalone recipe
+      # of ours is now the WHOLE recipe, so the closure stops following the
+      # upstream keys that were merged under ours. Every line above that counted
+      # through a merged recipe counted upstream's dependencies too. Measured on
+      # main at a07d6ef (Tcl, Tk and the X11 chain in), with v0.90.0:
+      #
+      #   76 project(s); 70 standalone, 2 fragment(s), 4 absent
+      #
+      # and after curl.se declared libpsl, with gnu.org/libunistring and
+      # rockdaboot.github.io/libpsl written (zpkb v0.90.0): three more
+      # projects, all standalone, and nothing more absent:
+      #
+      #   79 project(s); 73 standalone, 2 fragment(s), 4 absent
+      #
+      # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
+      # That measurement counted upstream's libpsl recipe (meson, python, ICU),
+      # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
       #
       # ⚠ The two lines are not strictly comparable: 2026-11-15 was counted by
       # hand over a 70-project closure, 2026-11-19 by the tool over 77, and the
