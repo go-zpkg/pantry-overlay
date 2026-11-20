@@ -171,6 +171,13 @@ build {
     CPPFLAGS = "-I{{deps.zlib.net.prefix}}/include"
     LDFLAGS  = "-L{{deps.zlib.net.prefix}}/lib"
 
+    # Carried from go-zpkg/packages overrides/openprinting.github.io-cups.hcl
+    # (deleted with this change, go-zpkg/zpkb#514/#516). Makedefs.in:155 links
+    # the shared libraries with ALL_DSOFLAGS, which does not include LDFLAGS, so
+    # the -L above never reached the link of libcups; configure keeps a DSOFLAGS
+    # given in the environment (cups-sharedlibs.m4:13).
+    DSOFLAGS = "$LDFLAGS"
+
     linux = {
       ARGS = [
         "--sysconfdir=/etc",
@@ -198,6 +205,12 @@ build {
   script = [
     "patch -p1 --batch --forward < props/tls-darwin-sethttperror.patch",
     "./configure $ARGS",
+
+    # Carried from the same override. `make install` runs install with -s
+    # (Makedefs:49 and :54, INSTALL_BIN and INSTALL_LIB); GNU strip destroys a
+    # Mach-O and exits 0, and a binary stripped after it is signed is killed by
+    # the arm64 kernel with no message (go-zpkg/zpkb#161).
+    "sed -i -E 's/^(INSTALL_(BIN|LIB)[[:space:]]*=.*[^-])[[:space:]]-s[[:space:]]*$/\\1/' Makedefs",
     "make --jobs {{ hw.concurrency }}",
     "make install",
   ]
