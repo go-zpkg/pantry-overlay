@@ -1,0 +1,11 @@
+--- a/src/lib/rpc/Makefile.in	2026-11-20 17:23:42
++++ b/src/lib/rpc/Makefile.in	2026-11-20 17:23:47
+@@ -15,7 +15,7 @@
+ 	$(TOPLIBD)/libkrb5$(SHLIBEXT) \
+ 	$(TOPLIBD)/libk5crypto$(SHLIBEXT) \
+ 	$(COM_ERR_DEPLIB)
+-SHLIB_EXPLIBS=-lgssapi_krb5 -lkrb5 -lk5crypto $(COM_ERR_LIB) $(LIBS)
++SHLIB_EXPLIBS=-lgssapi_krb5 -lkrb5 -lk5crypto -lkrb5support $(COM_ERR_LIB) $(LIBS)
+ RELDIR=rpc
+ 
+ SRCS = $(srcdir)/auth_none.c \

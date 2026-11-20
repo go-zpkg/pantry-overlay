@@ -423,6 +423,12 @@ jobs:
       #   60 project(s); 58 standalone in the overlay, 0 fragment(s), 2 absent
       #   (curl.se/ca-certs and sqlite.org, each with its own owner)
       #
+      # and after kerberos.org, completed into a whole recipe from MIT krb5
+      # 1.22.3's own files (it was a fragment: `openssl.org ^3` and nothing
+      # else), so cups can link GSSAPI on linux: the ceiling goes 177 → 176 (lint:
+      # "176 fragment(s), and --max-fragments says 177"). It was built on darwin
+      # and on linux and its test block runs a KDC and a GSSAPI exchange.
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
@@ -435,7 +441,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 177
+          --require-standalone --max-fragments 176
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
