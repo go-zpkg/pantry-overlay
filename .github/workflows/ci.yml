@@ -391,6 +391,13 @@ jobs:
       #
       #   80 project(s); 75 standalone, 2 fragment(s), 3 absent
       #
+      # and after rust-lang.org/cargo, completed into a whole recipe at 0.101.0
+      # (it was a fragment: dependencies and build only): the ceiling goes
+      # 179 → 178 (lint: "at the stated ceiling of 178"), and the closure
+      # loses a fragment without changing its size (zpkb v0.90.0):
+      #
+      #   80 project(s); 76 standalone, 1 fragment(s), 3 absent
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
@@ -403,7 +410,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 179
+          --require-standalone --max-fragments 178
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
