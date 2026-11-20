@@ -131,8 +131,19 @@ jobs:
       # 144` at the ceiling, `--require-provenance` 0, `--require-hcl` 0,
       # `--render-scripts` 0, `--require-known-env` 0 — the six verdicts this
       # lane already gave under v0.92.0, 144 fragments under both.
+      #
+      # ⭐ IT MOVES TO v0.95.0 ON 2026-11-20 BECAUSE A RECIPE NEEDS IT: that tag
+      # adds `platforms` to a `sources` entry (go-zpkg/zpkb#521), which go.dev,
+      # go.dev/dev-simd and rust-lang.org/cargo now use for their per-platform
+      # bootstrap, and v0.94.0 refuses the key. Measured on this branch (292
+      # recipes) with v0.95.0 before bumping: plain 0, `--require-standalone
+      # --max-fragments 139` at the ceiling, `--require-provenance` 0,
+      # `--require-hcl` 0, `--render-scripts` 0, `--require-known-env` 0 — the
+      # same six verdicts as under v0.94.0, 139 fragments under both — and
+      # `--max-script-fetches` counts 1 (4 under v0.94.0, before the recipes
+      # moved).
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. go-zpkg/recipes#50 reduced
@@ -510,7 +521,7 @@ jobs:
       #
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --require-standalone --max-fragments 139
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
@@ -588,7 +599,7 @@ jobs:
       # with no number to adjust and no slack to hide in.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --require-provenance
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
@@ -612,7 +623,7 @@ jobs:
       # with an unread yaml next to it (go-zpkg/zpkb#477).
       - name: our own recipes are HCL, and nothing may add a yaml back
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --require-hcl
 
       # ⛔⛔ A RECIPE CAN PARSE AND STILL DESCRIBE NO STEP, and this tree proved
@@ -637,7 +648,7 @@ jobs:
       # 1 refusal at 760df17, 0 after the repair. One instance, so no ceiling.
       - name: every script a recipe states can actually be rendered
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --render-scripts
 
       # ⛔⛔ FOUR RECIPES OF THIS TREE SHIPPED READING A BUILD VARIABLE THE
@@ -674,7 +685,7 @@ jobs:
       # once #138 fixed it. One instance, so no ceiling.
       - name: no recipe reads a build variable the builder does not export
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --require-known-env
 
       # ⛔⛔ A BUILD SCRIPT THAT DOWNLOADS SHIPS WHATEVER THE HOST SERVED. A
@@ -687,12 +698,18 @@ jobs:
       # added go.dev and go.dev/dev-simd, each fetching its bootstrap Go from
       # go.dev/dl inside the script — two regressions this step would have
       # refused. Measured with zpkb v0.94.0 at 61beb73: go.dev, go.dev/dev-simd,
-      # nvidia.com/cuda-cudart, rust-lang.org/cargo. Each is fixed by a pinned
-      # `sources` entry (extract = false for a plain file), then this drops.
+      # nvidia.com/cuda-cudart, rust-lang.org/cargo.
+      #
+      # ⭐ 4 → 1 WITH zpkb v0.95.0, WHICH ADDED `platforms` TO A `sources`
+      # ENTRY (go-zpkg/zpkb#521): go.dev, go.dev/dev-simd and rust-lang.org/cargo
+      # now pin one bootstrap archive per platform in `sources`, and only the
+      # entry for the build target is fetched. What remains is
+      # nvidia.com/cuda-cudart, whose redistrib JSON is version-keyed, not
+      # platform-keyed, and needs another answer.
       - name: no new recipe downloads from inside its build script
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
-          --max-script-fetches 4
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
+          --max-script-fetches 1
 
       # ⛔⛔ A PIN WRITTEN ONCE, AN UPSTREAM THAT MOVES ON ITS OWN CLOCK. A
       # recipe with `sha256` is fail-closed: a consumer asking "*" gets the
@@ -713,7 +730,7 @@ jobs:
       # retry.
       - name: the newest version each recipe resolves is pinned
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
           --check-newest-pinned
 
       # ⛔⛔ THIS REPOSITORY CALLED ITSELF `pantry-overlay` FOR A DAY AFTER IT WAS
