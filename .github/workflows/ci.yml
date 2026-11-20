@@ -246,6 +246,10 @@ jobs:
       #
       #   77 project(s); 53 standalone, 4 fragment(s), 20 absent
       #
+      # and the same day, after perl.org:
+      #
+      #   77 project(s); 54 standalone, 3 fragment(s), 20 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
@@ -259,7 +263,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 183
+          --require-standalone --max-fragments 182
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
