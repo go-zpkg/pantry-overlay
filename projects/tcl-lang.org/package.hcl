@@ -71,6 +71,13 @@ versions {
     "/\\/$/",
   ]
   url = "https://sourceforge.net/projects/tcl/files/Tcl/"
+
+  # ⛔ MEASURED: `zpkb versions` resolves 9.1.0 and 9.0.5 as the NEWEST, so a
+  # consumer asking `^9` would be handed a version this recipe refuses to build
+  # (it is absent from `sha256`). 9.0.5 is `rc0` and 9.1.0 is not a release
+  # (SourceForge folders 9.0.5 and 9.1.0 hold `tk9.0.5rc0-src.tar.gz` and
+  # pre-release files). Excluded until a release is pinned.
+  ignore = ["/^9\\.0\\.5$/", "/^9\\.1\\./"]
 }
 
 distributable {
@@ -196,9 +203,12 @@ build {
   # its library zip appended past the end of the Mach-O (Makefile.in:831-840);
   # install_name_tool, codesign or strip over it breaks the archive (the
   # pantry's `skip: fix-machos` and "fix-machos breaks tclsh" comments are this).
-  # zpkb's sources contain no `fix-machos` step, so none is skipped here; the
-  # test runs the INSTALLED tclsh and reads `info library` so a rewrite is
-  # caught.
+  # The schema's `build.skip` lists fix-machos among the fix-up steps (package.
+  # schema.json:45), so it is skipped; the prefix is final, so the absolute
+  # install_name already points at the installed libtcl. The test runs the
+  # INSTALLED tclsh and reads `info library`, so a rewrite would be caught.
+  skip = ["fix-machos"]
+
   script = [
     # (Each line is its own shell, as in the gcc recipe, hence `cd unix &&`.)
     "cd unix && case \"{{version.major}}\" in 9) X=--without-system-libtommath ;; *) X= ;; esac && ./configure $ARGS $X",
