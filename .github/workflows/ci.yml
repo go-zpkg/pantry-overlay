@@ -103,8 +103,28 @@ jobs:
       # the whole reason the pin exists — would stop being a single sentence
       # anyone can check. Each bump is one edit of one string, which is the
       # cheapest part of adding a step.
+      #
+      # ⭐ IT MOVES TO v0.92.0 ON 2026-11-20, AND NOT BECAUSE v0.82.0 REFUSES THE
+      # NEW KEYS. It does not: measured with a v0.82.0 binary, `sources` and
+      # `extract = false` (go-zpkg/zpkb#518, released as v0.92.0) read without a
+      # complaint. That is the problem. v0.82.0 has no schema for them, so it ALSO
+      # reads a `sources` entry with no `sha256` and a misspelt key (`bogus = true`)
+      # and says "1 recipe(s) read"; v0.92.0 refuses the same file ("missing
+      # property 'sha256'", "additional properties 'bogus' not allowed"). A recipe
+      # whose whole point is that every artifact it fetches is pinned would have
+      # been judged by a lane that cannot tell a pin from its absence.
+      #
+      # Measured before bumping, on main at f6c5155 (285 recipes), all six gates
+      # with BOTH judges: plain 0, `--require-standalone --max-fragments 175`
+      # at the ceiling, `--require-provenance` 0, `--require-hcl` 0,
+      # `--render-scripts` 0, `--require-known-env` 0 — the same six verdicts. The
+      # ratchet's number is the one that depends on how fragments are counted, so it
+      # is stated for each: 175 fragment(s) under v0.82.0, 175 under v0.92.0 (the
+      # message "175 fragment(s), and --max-fragments says 176" is identical from
+      # both). So the bump moves no number of its own, which is what this note asks
+      # of one.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. go-zpkg/recipes#50 reduced
@@ -443,6 +463,23 @@ jobs:
       # and `zpkb versions --recipe projects/llvm.org/package.hcl` now lists
       # 23.1.6 first, which the sha256 table pins.
       #
+      # and after curl.se/ca-certs, written whole on `extract = false` (the
+      # pantry's recipe fetched the bundle with `curl -k` inside its build script
+      # and had no recipe of ours), and info-zip.org/zip, written whole on
+      # `sources` (Debian's patch set as a pinned source). Both are NEW recipes, so
+      # the ceiling does not move for them. ca-certs was one of the two absent
+      # projects of the closure and zip is named by none. Measured from this
+      # checkout with zpkb v0.92.0, `closure -build -require-standalone
+      # -recipe-dir <pantry> -overlay . go-zpkg/base-toolchain`, 2026-11-20, main
+      # at f6c5155 before and this branch after:
+      #
+      #   74 project(s); 72 standalone in the overlay, 0 fragment(s), 2 absent
+      #   74 project(s); 73 standalone in the overlay, 0 fragment(s), 1 absent
+      #
+      # (sqlite.org is the one left). Same closure root, same size, so the two lines
+      # are comparable: nothing was added to or dropped from it, one project moved
+      # from absent to standalone.
+      #
       # and after openjpeg.org, completed into a whole recipe at 2.5.4 (it was a
       # fragment: three dependencies and a build script) for python-pillow.org,
       # go-zpkg/recipes#122 step 5: the ceiling goes 176 → 175. The four recipes
@@ -465,7 +502,7 @@ jobs:
       #
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
           --require-standalone --max-fragments 175
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
@@ -543,7 +580,7 @@ jobs:
       # with no number to adjust and no slack to hide in.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
           --require-provenance
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
@@ -567,7 +604,7 @@ jobs:
       # with an unread yaml next to it (go-zpkg/zpkb#477).
       - name: our own recipes are HCL, and nothing may add a yaml back
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
           --require-hcl
 
       # ⛔⛔ A RECIPE CAN PARSE AND STILL DESCRIBE NO STEP, and this tree proved
@@ -592,7 +629,7 @@ jobs:
       # 1 refusal at 760df17, 0 after the repair. One instance, so no ceiling.
       - name: every script a recipe states can actually be rendered
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
           --render-scripts
 
       # ⛔⛔ FOUR RECIPES OF THIS TREE SHIPPED READING A BUILD VARIABLE THE
@@ -629,7 +666,7 @@ jobs:
       # once #138 fixed it. One instance, so no ceiling.
       - name: no recipe reads a build variable the builder does not export
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
           --require-known-env
 
       # ⛔⛔ THIS REPOSITORY CALLED ITSELF `pantry-overlay` FOR A DAY AFTER IT WAS
