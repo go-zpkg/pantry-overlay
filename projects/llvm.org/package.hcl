@@ -345,6 +345,13 @@ for t in X86 AArch64 SystemZ WebAssembly; do
   esac
 done
 
+# Rust links these statically (llvm-config --link-static): the files named have
+# to be installed, which a `LLVM_BUILD_LLVM_DYLIB` install is not guaranteed to
+# do on every cmake (the fragment's "doesn't install a bunch of the libs").
+for f in $("$C" --link-static --libfiles core); do
+  if [ ! -f "$f" ]; then echo "static LLVM library missing: $f" >&2; exit 1; fi
+done
+
 # 3. The auto-detections, read off the installed LLVMConfig.cmake: the three
 # named FORCE_ON are on, the refused ones are off.
 M="$P/lib/cmake/llvm/LLVMConfig.cmake"

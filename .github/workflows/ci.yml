@@ -415,6 +415,14 @@ jobs:
       # rust-lang.org and what only they pulled left the linux/x86-64 closure.
       # rust-lang.org is still unwritten, and is still what cargo builds with.
       #
+      # and after rust-lang.org (rustc 1.100.0 against llvm.org, a NEW recipe
+      # that no base-toolchain closure names any more): the ceiling holds at 177,
+      # and cargo's own closure, which does name it, goes from 3 absent to 2:
+      #
+      #   `closure -build -require-standalone … rust-lang.org/cargo`
+      #   60 project(s); 58 standalone in the overlay, 0 fragment(s), 2 absent
+      #   (curl.se/ca-certs and sqlite.org, each with its own owner)
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
