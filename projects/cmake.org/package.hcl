@@ -98,8 +98,14 @@ distributable {
   # (cmake-4.5.0-SHA-256.txt.asc). Two paths, one answer, and the second
   # answer carries a signature — see provenance for why the signature could
   # not be VERIFIED here.
+  #
+  # 4.5.1 (2026-11-20, go-zpkg/recipes#208): 13897760 bytes by the same
+  # fetcher, and the same two paths agree — cmake-4.5.1-SHA-256.txt line 20
+  # carries the identical digest. Same rung as 4.5.0: published checksum,
+  # signature over it not verified (provenance says why).
   sha256 = {
     "4.5.0" = "424352d6133e8455e020da787008e8dc67abb18820af3532572ab35657e49213"
+    "4.5.1" = "a79bf33cbe05686fdf79c2bbbcfe5e8e62ad16d3d540fa737cbedfeed41fb69e"
   }
 }
 

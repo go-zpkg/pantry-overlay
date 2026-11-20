@@ -36,12 +36,14 @@ distributable {
   #
   #   5.3.2  3 749 260 bytes, signed 2025-04-02
   #   5.4.1  3 838 416 bytes
+  #   5.4.2  3 888 524 bytes, signed 2026-11-16 (added for go-zpkg/recipes#208)
   #
-  # Both verified against the same key with `zpkb sourcepin`:
+  # All three verified against the same key with `zpkb sourcepin`:
   #
   #   signed by  D1967C63788713177D861ED7DF597815937EC0D2
   #              Arnold Robbins <arnold@skeeve.com>
   #   found      after walking 347 primary key(s) of ftp.gnu.org's keyring
+  #              (348 when 5.4.2 was checked, 2026-11-20)
   #   checked    when each digest was recorded, not at every build
   #
   # ⛔ WHERE THIS CHAIN IS WEAKER THAN gnu.org/sed's, STATED RATHER THAN
@@ -66,6 +68,7 @@ distributable {
   sha256 = {
     "5.3.2" = "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc"
     "5.4.1" = "07f6f7342b7febe4313fc2c2542ad93d64fe20ad8717200109f105a826f5fd37"
+    "5.4.2" = "b95e4909533b5f988c6b5e5539b3b3ddf76e7d7df02ca2e5b5b7d6f62db78e6a"
   }
 
   # ⛔ NO `sha` FIELD: it means "where the expected SHA-256 is PUBLISHED", a
@@ -263,7 +266,8 @@ The signatures, for the record:
 
   https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.xz.sig  (488 bytes)
   https://ftp.gnu.org/gnu/gawk/gawk-5.4.1.tar.xz.sig
-  key          ftp.gnu.org/gnu/gnu-keyring.gpg, local copy
+  https://ftp.gnu.org/gnu/gawk/gawk-5.4.2.tar.xz.sig  (signed 2026-11-16T11:34:48Z)
+  key         ftp.gnu.org/gnu/gnu-keyring.gpg, local copy
   identity     Arnold Robbins <arnold@skeeve.com>
   fingerprint  D1967C63788713177D861ED7DF597815937EC0D2, from the signature
                itself — the announcements publish none — raised above circular

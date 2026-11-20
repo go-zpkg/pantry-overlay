@@ -694,6 +694,28 @@ jobs:
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
           --max-script-fetches 4
 
+      # ⛔⛔ A PIN WRITTEN ONCE, AN UPSTREAM THAT MOVES ON ITS OWN CLOCK. A
+      # recipe with `sha256` is fail-closed: a consumer asking "*" gets the
+      # newest version `versions` resolves, and if THAT one has no pin the
+      # default build is a refusal. Nothing else here could see it, because
+      # every other step reads only the recipe; this one RESOLVES the versions.
+      # It recurred three times by hand (libstdcxx, tcl, llvm, #209), then
+      # #208 listed five at once — and when this gate was first run, on
+      # 2026-11-20, it found NINE: cmake 4.5.1, git-trim 0.4.4, flex 2.7.3,
+      # gawk 5.4.2, linux-headers 7.3.5, lz4 1.11.1, postgresql and libpq 19.0,
+      # and boost.org, whose `versions` matched no tag at all (boost-X.Y.Z
+      # without a `strip`). The list had grown while the issue stood open.
+      #
+      # ⚠ THIS STEP CAN TURN RED WITH NO CHANGE IN THIS REPOSITORY: an upstream
+      # release is enough (flex shipped eight in five days). That is the point,
+      # not a flake — the default build broke at that instant, here or not.
+      # The fix is a pin (signature-checked) or a deliberate `ignore`, never a
+      # retry.
+      - name: the newest version each recipe resolves is pinned
+        run: >
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          --check-newest-pinned
+
       # ⛔⛔ THIS REPOSITORY CALLED ITSELF `pantry-overlay` FOR A DAY AFTER IT WAS
       # RENAMED, STARTING WITH THE FIRST LINE OF ITS OWN README — beside a
       # sentence pointing consumers at `ZPKG_PANTRY_OVERLAY`, which zpkb v0.83.0

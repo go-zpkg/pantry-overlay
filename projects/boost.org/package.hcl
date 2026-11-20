@@ -31,8 +31,17 @@ summary = "Boost: peer-reviewed portable C++ source libraries"
 # top-level licence file is cited.
 license = "BSL-1.0"
 
+# ⛔ WITHOUT `strip` THIS BLOCK RESOLVED NOTHING, and nothing said so until
+# `zpkb lint --check-newest-pinned` (v0.94.0) did: "cannot resolve its newest
+# version: versions: no candidate version matched". boostorg/boost tags every
+# release `boost-X.Y.Z`, so no tag parsed as a version. Read from `gh release
+# list -R boostorg/boost` on 2026-11-20: boost-1.93.0.beta1, boost-1.92.0,
+# boost-1.92.0.beta1, boost-1.91.0-1. The betas are not releases; `-1` is a
+# respin suffix the archive URL below does not spell, so it is ignored too.
 versions {
   github = "boostorg/boost"
+  strip  = "/^boost-/"
+  ignore = ["/beta/", "/rc/", "/-[0-9]+$/"]
 }
 
 dependencies = {

@@ -89,8 +89,20 @@ distributable {
   #
   # The subkey is not published by flexlexer.org, only the primary that
   # certifies it; the chain from primary to subkey is in the key file.
+  #
+  # ⚠ 2.7.3 ADDED 2026-11-20 (go-zpkg/recipes#208), AND IT IS PINNED, NOT
+  # BUILT. flex shipped EIGHT releases in five days (2.6.14 on 11-15 to 2.7.3
+  # on 11-20, two hours before this pin), so `versions` resolving past 2.6.15
+  # made the default build a refusal. Same chain, same tool: 1 870 156 bytes,
+  # signed 2026-11-20T19:49:31Z by the primary above (key = that release's
+  # flex-release-key.asc), and the digest equals line 1 of v2.7.3's SHA256SUMS.
+  # 2.7.0's NEWS names one noteworthy change, a C++-scanner check that
+  # FlexLexer.h comes from the same flex (#872) — a consumer-side refusal, not
+  # a build-system change — so the measured build below is expected to hold;
+  # the three builds behind it were run at 2.6.15, and that is what is proven.
   sha256 = {
     "2.6.15" = "ba38801d12d38782e36f2ddd66c118aa9ed3cbed9849194c4e68d9894cd739d9"
+    "2.7.3"  = "b18bbc3622b2b9ebecd0423f4e110adfad8db51d0c5ada3f26660c7cb7c735ec"
   }
 
   # ⛔ NO `sha` FIELD. `sha` means "where the expected SHA-256 is PUBLISHED", a
