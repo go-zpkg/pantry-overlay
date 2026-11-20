@@ -271,6 +271,12 @@ jobs:
       #
       #   77 project(s); 59 standalone, 3 fragment(s), 15 absent
       #
+      # and the same day, after x.org/protocol (xorgproto), the first of the
+      # seven-recipe X11 chain of go-zpkg/recipes#167 — no fragment moves, so the
+      # ceiling stays:
+      #
+      #   77 project(s); 60 standalone, 3 fragment(s), 14 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
