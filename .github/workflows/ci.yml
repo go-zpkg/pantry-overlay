@@ -227,6 +227,13 @@ jobs:
       # dependency that stopped being linked can be caught before a consumer
       # meets it as `import ssl` failing.
       #
+      # 182 → 181 with freedesktop.org/fontconfig, the first fragment completed
+      # since — written for the Tk libraries of go-zpkg/recipes#167 (libXft
+      # requires it). The fragment declared libxml2, which fontconfig links only
+      # with `--enable-libxml2` (default off), and omitted gperf and python, which
+      # its configure and its install step run; both are declared now, and
+      # gnu.org/gperf was written first because this tree had none.
+      #
       # ⛔ WHICH IS WHY THIS NUMBER IS NOT A PROGRESS BAR FOR
       # go-zpkg/packages#440. Measured 2026-11-15 over the 70-project BUILD
       # closure of go-zpkg/base-toolchain: 14 fragments, 11 standalone, and 45
@@ -320,6 +327,12 @@ jobs:
       #
       #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
       #
+      # and after freedesktop.org/fontconfig. The closure's own fragment count
+      # does not move (it holds llvm.org, rust-lang.org/cargo and tcl-lang.org),
+      # but the tree's does, so the ceiling below goes 182 → 181:
+      #
+      #   77 project(s); 66 standalone, 3 fragment(s), 8 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
@@ -333,7 +346,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 182
+          --require-standalone --max-fragments 181
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
