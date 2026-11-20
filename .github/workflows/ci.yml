@@ -402,6 +402,19 @@ jobs:
       # #122 step 5): a NEW recipe no closure project names, so the ceiling holds
       # at 178.
       #
+      # and after llvm.org, completed into a whole recipe at 22.1.8 (it was the
+      # last fragment of the closure): the ceiling goes 178 → 177, and the
+      # closure goes
+      #
+      #   74 project(s); 72 standalone in the overlay, 0 fragment(s), 2 absent
+      #
+      # ⚠ 80 → 74 IS NOT PROGRESS, IT IS AN EDGE THAT WENT AWAY. The fragment and
+      # the pantry's recipe both named crates.io/semverator as a build
+      # dependency, to pick compiler-rt by version; one version is pinned now, so
+      # the question has one answer, and semverator, rust-lang.org/cargo,
+      # rust-lang.org and what only they pulled left the linux/x86-64 closure.
+      # rust-lang.org is still unwritten, and is still what cargo builds with.
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
@@ -414,7 +427,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 178
+          --require-standalone --max-fragments 177
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
