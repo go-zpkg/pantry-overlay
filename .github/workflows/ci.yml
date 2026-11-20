@@ -480,6 +480,13 @@ jobs:
       # are comparable: nothing was added to or dropped from it, one project moved
       # from absent to standalone.
       #
+      # and after openjpeg.org, completed into a whole recipe at 2.5.4 (it was a
+      # fragment: three dependencies and a build script) for python-pillow.org,
+      # go-zpkg/recipes#122 step 5: the ceiling goes 176 → 175. The four recipes
+      # written beside it are NEW projects no closure project names
+      # (libjpeg-turbo.org, google.com/webp, simplesystems.org/libtiff,
+      # littlecms.com), so they move no count; python-pillow.org is a fifth.
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
@@ -492,7 +499,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.92.0 lint --dir .
-          --require-standalone --max-fragments 176
+          --require-standalone --max-fragments 175
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
