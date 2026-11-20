@@ -271,6 +271,17 @@ jobs:
       #
       #   77 project(s); 59 standalone, 3 fragment(s), 15 absent
       #
+      # and the same day, after curl.se declared libpsl (with
+      # gnu.org/libunistring and rockdaboot.github.io/libpsl written):
+      #
+      #   94 project(s); 61 standalone, 7 fragment(s), 26 absent
+      #
+      # ⛔ THAT LINE MEASURES UPSTREAM'S KEYS, NOT OURS. The 17 projects it adds
+      # (unicode.org, mesonbuild.com, haskell.org, pandoc.org, deno.land …) are
+      # declared by no recipe of ours: `zpkb closure` merges upstream's libpsl
+      # recipe UNDER ours, map by map, so its ICU runtime and its meson/python
+      # build dependencies are inherited. go-zpkg/zpkb#514.
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
