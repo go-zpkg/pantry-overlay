@@ -267,6 +267,10 @@ jobs:
       #
       #   77 project(s); 58 standalone, 3 fragment(s), 16 absent
       #
+      # and the same day, after libgit2.org:
+      #
+      #   77 project(s); 59 standalone, 3 fragment(s), 15 absent
+      #
       # ⚠ The total held at 77 because curl.se REFUSES libpsl rather than
       # declaring it; declaring it measured 93, with sixteen added projects
       # Haskell among them. That choice is a stated downgrade and lives in
