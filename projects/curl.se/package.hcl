@@ -12,13 +12,15 @@
 #      against a file that is not there. `curl.se/ca-certs` was declared and
 #      wired to nothing. See the CA paragraph in `build`.
 #   2. libpsl was LINKED AND UNDECLARED, because curl requires it by default.
-#      It is now refused EXPLICITLY, as a measured and stated trade-off: to
-#      declare it grows the base-toolchain build closure from 77 projects to
-#      93, Haskell among them. ⚠ A visible downgrade of cookie scoping, and the
-#      owner's to reverse — see `dependencies`.
+#      It was first refused (--without-libpsl), as a stated downgrade of cookie
+#      scoping. ⭐ REVERSED 2026-11-20 on the owner's decision, « il faut que
+#      ça fonctionne »: libpsl is declared and named. The cost that justified
+#      the refusal (77 → 93 projects) came from upstream's libpsl recipe, not
+#      from libpsl — see `dependencies`.
 #   3. Four optional libraries are probed and taken if present: brotli, zstd,
-#      libidn2 and LDAP. Each is closed below, with the line that makes its
-#      miss silent.
+#      libidn2 and LDAP. libidn2 is now DECLARED and named (it arrives with
+#      libpsl anyway); the other three are closed below, with the line that
+#      makes each miss silent.
 #
 # The paragraphs that follow predate this completion and are kept: they are
 # the versions audit, and it still holds.
@@ -83,9 +85,17 @@ dependencies = {
 
   "zlib.net" = "^1.2.11"
 
-  # ⛔⛔ libpsl IS NOT DECLARED, AND THAT IS A MEASURED, VISIBLE DOWNGRADE —
-  # the owner's to reverse. Read this before changing it.
-  #
+  # ⭐⭐ libpsl IS DECLARED. It was refused until 2026-11-20 as a measured
+  # downgrade, and the owner reversed that: « il faut que ça fonctionne ». The
+  # history is kept because the measurement that justified the refusal was
+  # right about upstream and wrong about libpsl.
+  "rockdaboot.github.io/libpsl" = "*"
+
+  # Named below with --with-libidn2, so curl converts internationalised host
+  # names. libpsl already brings libidn2 into curl's closure, so declaring it
+  # here costs nothing and says what it is for.
+  "gnu.org/libidn2" = "*"
+
   # curl REQUIRES libpsl unless told otherwise, as a fatal error:
   # configure.ac:2277 defaults OPT_LIBPSL=off ("compiler & linker defaults"),
   # :2324 probes, and :2340-2341 is
@@ -113,15 +123,18 @@ dependencies = {
   # ninja, pkg-config and python" — was off by most of that; it is why this is
   # measured rather than predicted.
   #
-  # ⛔ WHAT `--without-libpsl` COSTS, STATED PLAINLY: curl stops checking cookie
-  # domains against the public suffix list, so a site could set a cookie for a
-  # public suffix. curl enables that check by default, and every consumer of
-  # upstream's curl has it today — by accident, but has it. The base toolchain
-  # uses curl to FETCH SOURCES, where cookies do not arise; an end user of this
-  # package is a different audience, and serving both from one recipe is the
-  # trade-off being made. Sixteen more projects of step-1 work for a feature
-  # the toolchain does not exercise is the reason; a separate PSL-enabled curl,
-  # or libpsl's closure shrinking, is the way back.
+  # ⭐ WHY THAT NUMBER NO LONGER APPLIES: it was UPSTREAM's libpsl recipe — meson,
+  # ninja, python and `-Druntime=libicu` — that carried those projects. Our
+  # rockdaboot.github.io/libpsl builds the maintainer's tarball with its own
+  # autotools `configure` and its pre-generated DAFSA data (no python), with
+  # libidn2 as the IDNA runtime (no ICU). Its new dependencies are
+  # gnu.org/libunistring and nothing else absent; the measured closure is in
+  # the pull request that reversed this.
+  #
+  # What the refusal cost, kept for the record: without libpsl, curl stops
+  # checking cookie domains against the public suffix list, so a site could
+  # set a cookie for a public suffix such as `co.uk`. The test below now
+  # asserts PSL is PRESENT.
 }
 
 # ⚠ CARRIED IN FULL, because an overlay list REPLACES rather than merges
@@ -200,10 +213,16 @@ build {
       # make a miss fail. The `curl -V` assertion below can.
       "--with-zlib={{deps.zlib.net.prefix}}",
 
-      # Required by default and fatal on a miss (:2340-2341), so it has to be
-      # named either way; here it is refused, for the measured reason given in
-      # `dependencies`. ⚠ A security-relevant choice: see that paragraph.
-      "--without-libpsl",
+      # Required by default and fatal on a miss (:2340-2341). With a PATH,
+      # :2306-2310 takes -L/-I from it instead of from pkg-config, so the libpsl
+      # linked is the declared one.
+      "--with-libpsl={{deps.rockdaboot.github.io/libpsl.prefix}}",
+
+      # ⛔ libidn2 WITH A PATH, AND A MISS IS STILL ONLY A WARNING: :2995-2999
+      # takes the path, but :3088 answers a failed link with
+      # AC_MSG_WARN([Cannot find libidn2]) and :3093 turns IDN off. No flag makes
+      # that fatal, so the `curl -V` test below asserts IDN is present.
+      "--with-libidn2={{deps.gnu.org/libidn2.prefix}}",
 
       # ⛔ THE FOUR SILENT PROBES, each of which links a library this recipe
       # does not declare if the builder happens to have it, and skips it in
@@ -222,13 +241,11 @@ build {
       # case arm at :1594-1595 confirms it. Every one of these was read off its
       # block rather than inferred from the word.
       #
-      # Closed rather than declared: none is in this recipe's dependencies,
-      # and adding four libraries to a base-toolchain member is a decision for
-      # its own pull request. The cost is stated: without libidn2, curl passes
-      # an internationalised host name through unconverted.
+      # libidn2 is now declared and named above. The other three are closed
+      # rather than declared: adding them to a base-toolchain member is a
+      # decision for its own pull request.
       "--without-brotli",
       "--without-zstd",
-      "--without-libidn2",
       "--disable-ldap",
 
       # ⛔⛔ THE TRUST STORE. acinclude.m4:1081-1114, with no --with-ca-*
@@ -317,13 +334,16 @@ grep '^Protocols:' v.txt > prot.txt
 for want in OpenSSL/ zlib/ nghttp2/; do
   grep -q "$want" libs.txt || { echo "curl was not built with $want" >&2; exit 1; }
 done
-for want in HTTP2 libz SSL; do
+# PSL and IDN are now PRESENCES: PSL cannot be missing without configure
+# failing, but IDN can (:3088 only warns), so this is libidn2's only guard.
+for want in HTTP2 libz SSL PSL IDN; do
   grep -qw "$want" feat.txt || { echo "curl lacks the $want feature" >&2; exit 1; }
 done
+grep -q "libpsl/" libs.txt || { echo "curl -V does not name libpsl" >&2; exit 1; }
+grep -q "libidn2/" libs.txt || { echo "curl -V does not name libidn2" >&2; exit 1; }
 # The closed probes, asserted as ABSENCES: a builder that has the library
-# would otherwise link it. PSL is among them deliberately — if it ever appears,
-# --without-libpsl was dropped and an undeclared library came back with it.
-for gone in brotli zstd IDN PSL; do
+# would otherwise link it.
+for gone in brotli zstd; do
   if grep -qw "$gone" feat.txt; then echo "curl links $gone, which this recipe closed" >&2; exit 1; fi
 done
 if grep -qw ldap prot.txt; then echo "curl speaks LDAP, which this recipe closed" >&2; exit 1; fi
@@ -368,10 +388,8 @@ provenance {
     # script — TLS verification disabled, no digest — which is
     # go-zpkg/zpkb#487's shape and why ca-certs has no recipe of ours yet.
     "pkgxdev/pantry projects/curl.se/ca-certs/package.yml",
-    # Read for the facts behind NOT declaring libpsl: that it exists there and
-    # what it depends on. The cost that decided it was measured, not read off
-    # this file — `zpkb closure -build` puts libpsl's own build closure at 85
-    # projects.
+    # Read for what upstream's libpsl depends on, which is what made declaring
+    # it look expensive. Our own libpsl recipe is written from libpsl's files.
     "pkgxdev/pantry projects/rockdaboot.github.io/libpsl/package.yml",
   ]
 
