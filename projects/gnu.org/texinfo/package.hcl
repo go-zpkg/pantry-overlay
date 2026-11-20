@@ -145,7 +145,36 @@ build {
   }
 
   script = [
-    "./configure $ARGS",
+    # ⛔⛔ THE XS MODULES NEVER SEE THE BUILDER'S LDFLAGS, so on darwin they are
+    # linked without the rpath they need. Carried from go-zpkg/packages
+    # overrides/gnu.org-texinfo.hcl, which stopped applying when zpkb v0.90.0
+    # made a standalone recipe the whole recipe (go-zpkg/zpkb#514, #516) — and
+    # this recipe is exactly what made it matter, since `--enable-perl-xs` above
+    # builds those thirteen modules.
+    #
+    # tta/configure.ac:435-447 ends with `CFLAGS=$PERL_EXT_CFLAGS` and
+    # `LDFLAGS=$PERL_EXT_LDFLAGS` whenever XS is on: the LDFLAGS the builder
+    # exports are REPLACED, not appended to, and the XS link
+    # (tta/perl/XSTexinfo/Makefile.am links with $(AM_LDFLAGS) = XSLIBS_LDFLAGS,
+    # :60-64, and automake adds $(LDFLAGS) after it) takes the rest from there.
+    # The override worked around it with a `cc` wrapper first on PATH; the
+    # project's own knob for this (AC_ARG_VAR at tta/configure.ac:270 and
+    # configure.ac:64, "Linker flags for a Perl extension") says the same thing
+    # without a generated shell script. The VALUE is the override's, unchanged:
+    # the store root ($ZPKG_DIR, which `{{pkgx.prefix}}` expands to) as an
+    # rpath, plus the header padding the wrapper also passed.
+    #
+    # It is spelled on the configure line, as `--with-stage1-ldflags` is in the
+    # gcc recipe, because each script line is its own shell here (see the tcl
+    # recipe): an `export` on a line of its own would be gone by the next.
+    {
+      run = "./configure $ARGS PERL_EXT_LDFLAGS=\"-Wl,-headerpad_max_install_names -Wl,-rpath,$ZPKG_DIR\""
+      if  = "darwin"
+    },
+    {
+      run = "./configure $ARGS"
+      if  = "linux"
+    },
     "make --jobs {{ hw.concurrency }}",
     "make install",
   ]
@@ -191,6 +220,25 @@ test {
     # built, and everything else still succeeds. This is the only thing standing
     # between that and an artifact silently missing its reader.
     "test -x \"{{prefix}}/bin/info\"",
+
+    # ⛔⛔ THE ASSERTION FOR PERL_EXT_LDFLAGS, read off the artifact: every XS
+    # module must carry the store root as an LC_RPATH. Darwin only — an ELF
+    # module finds its libraries another way — and it refuses an EMPTY directory,
+    # which would make the loop vacuously pass.
+    {
+      run = <<EOT
+set -eu
+n=0
+for f in "{{prefix}}"/lib/texi2any/XS_extension/*.so; do
+  test -f "$f"
+  otool -l "$f" > rpath.txt
+  grep -F -q "path $ZPKG_DIR " rpath.txt || { echo "$f has no LC_RPATH for $ZPKG_DIR" >&2; exit 1; }
+  n=$((n+1))
+done
+test "$n" -gt 0
+EOT
+      if  = "darwin"
+    },
 
     # makeinfo is a symlink made by an install hook; assert the link resolves
     # rather than merely exists.

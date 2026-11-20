@@ -85,6 +85,20 @@ build {
   # --sysconfdir / --localstatedir are accepted and then IGNORED with a notice,
   # so passing autotools habits here would read as configuration and do
   # nothing.
+  #
+  # ⛔ NO s390x `-fzvector -march=z13` HERE, AND THAT IS A READING, NOT A GAP.
+  # go-zpkg/packages overrides/zlib.net.hcl added both to CFLAGS on s390x,
+  # because clang refuses contrib/crc32vx without them ("Use -fzvector to enable
+  # vector extensions", then "'__builtin_s390_vupllf' needs target feature
+  # vector"); it stopped applying when zpkb v0.90.0 made a standalone recipe the
+  # whole recipe (go-zpkg/zpkb#514, #516). At 1.4, the only version pinned above,
+  # zlib's own configure does it: configure:965-1013 detects s390x, picks
+  # `VGFMAFLAG=-fzvector` when $CC is clang (`-mzarch` otherwise), compiles a
+  # vecintrin.h probe, retries with `-march=z13` when the plain flag fails
+  # (:994-997), and only then adds -DHAVE_S390X_VX and crc32_vx.o. Those are the
+  # override's two flags, chosen by a probe; repeating them here would state a
+  # decision configure already makes. NOT BUILT on s390x by this change: the
+  # reading is of the source, and the first s390x factory run is the test.
   script = [
     "./configure --prefix={{prefix}}",
     "make --jobs {{hw.concurrency}}",
