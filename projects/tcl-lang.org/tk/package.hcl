@@ -93,6 +93,11 @@ versions {
     "/\\/$/",
   ]
   url = "https://sourceforge.net/projects/tcl/files/Tcl/"
+
+  # As in tcl-lang.org: 9.0.5 is rc0 and 9.1.0 is not a release, and a version
+  # absent from `sha256` is refused, so `^9` must not resolve to them.
+  # (8.6.x enumerates and is refused for the same reason: Tk 8.6 is not pinned.)
+  ignore = ["/^9\\.0\\.5$/", "/^9\\.1\\./", "/^8\\./"]
 }
 
 distributable {
@@ -169,6 +174,11 @@ build {
       ]
     }
   }
+
+  # Makefile.in:647-650 and :687-690 append the Tk script library as a zip to
+  # libtcl9tk9.0 and to wish (zipfs, ZIPFS_BUILD); a Mach-O rewrite over that
+  # data breaks the archive, exactly as for tclsh (see tcl-lang.org).
+  skip = ["fix-machos"]
 
   script = [
     "cd unix && ./configure $ARGS",

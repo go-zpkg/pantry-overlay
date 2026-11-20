@@ -368,6 +368,12 @@ jobs:
       #
       #   79 project(s); 73 standalone, 2 fragment(s), 4 absent
       #
+      # and after github.com/andreas-kupries/critcl, tcl-lang.org/tcllib,
+      # tcl-lang.org/tcltls and tcl-lang.org/itk, the four extension packages of
+      # the tcl-lang.org monolith (go-zpkg/recipes#122 step 4): four NEW recipes
+      # no closure project names, no fragment completed, so the ceiling holds at
+      # 180.
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
