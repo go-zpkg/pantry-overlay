@@ -398,6 +398,10 @@ jobs:
       #
       #   80 project(s); 76 standalone, 1 fragment(s), 3 absent
       #
+      # and after tcl-lang.org/expect (Expect 5.45.4 on Tcl 8.6, go-zpkg/recipes
+      # #122 step 5): a NEW recipe no closure project names, so the ceiling holds
+      # at 178.
+      #
       # ⚠ curl.se used to REFUSE libpsl, because declaring it measured 77 → 93.
       # That measurement counted upstream's libpsl recipe (meson, python, ICU),
       # merged under ours. The refusal is reversed in projects/curl.se/package.hcl.
