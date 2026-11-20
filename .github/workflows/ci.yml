@@ -423,8 +423,14 @@ jobs:
       #   60 project(s); 58 standalone in the overlay, 0 fragment(s), 2 absent
       #   (curl.se/ca-certs and sqlite.org, each with its own owner)
       #
+      # and after kerberos.org, completed into a whole recipe from MIT krb5
+      # 1.22.3's own files (it was a fragment: `openssl.org ^3` and nothing
+      # else), so cups can link GSSAPI on linux: the ceiling goes 177 → 176 (lint:
+      # "176 fragment(s), and --max-fragments says 177"). It was built on darwin
+      # and on linux and its test block runs a KDC and a GSSAPI exchange.
+      #
       # and after llvm.org 23.1.6 was pinned beside 22.1.8: no project written
-      # or completed, so the ceiling holds at 177. What it fixes is not a count.
+      # or completed, so the ceiling holds at 176. What it fixes is not a count.
       # `zpkb versions` resolved 23.1.6 first, base-toolchain asks
       # `llvm.org = "*"`, and a recipe that pins refuses a version it did not
       # pin, so the default build of the set was a refusal. Measured from this
@@ -449,7 +455,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 177
+          --require-standalone --max-fragments 176
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and

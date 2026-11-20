@@ -103,6 +103,21 @@ build {
       # `AM_GNU_GETTEXT([external])` (configure.ac:283) — findutils does not
       # bundle libintl, so NLS is a real dependency on gnu.org/gettext.
       "--disable-nls",
+
+      # ⛔⛔ SELINUX IS AUTO-DETECTED AND SETTLED OFF — a fix that lived only in
+      # go-zpkg/packages overrides/gnu.org-findutils.hcl and stopped applying
+      # when zpkb v0.90.0 made a standalone recipe the whole recipe
+      # (go-zpkg/zpkb#514, #516). The override's measurement: on a builder that
+      # has libselinux (every Ubuntu one) `bin/find` came out linked against
+      # libselinux.so.1, which nothing in this factory provides, so it could not
+      # start in a FROM-scratch tree (zpkb builder's soname census, s390x,
+      # go-zpkg/zpkb#276).
+      #
+      # Still live at 4.11.0, read in the unpacked source: configure:28799-28804
+      # `--with-selinux` defaults to `with_selinux=maybe` (auto-detection) and
+      # configure:3913 documents `--without-selinux`, at :28894 `with_selinux=no`.
+      # Same cause as gnu.org/coreutils' flag above.
+      "--without-selinux",
       "--mandir={{prefix}}/man",
       "--infodir={{prefix}}/info",
     ]
@@ -227,6 +242,11 @@ test {
     # into the HOST, which is the trade this recipe declines.
     "locate zzz-no-such-name > t/loc.out 2>&1 || true",
     "grep -q 'var/locatedb' t/loc.out",
+
+    # ⛔⛔ THE ASSERTION FOR --without-selinux, read off the artifact: a linked
+    # library is a NEEDED entry, a literal string in the ELF dynamic section, so
+    # the binary names `libselinux` if and only if configure found it.
+    "! grep -q libselinux {{prefix}}/bin/find",
   ]
 }
 

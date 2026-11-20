@@ -167,6 +167,36 @@ build {
     "cd build && ../configure $ARGS --with-stage1-ldflags=\"-static-libstdc++ -static-libgcc\"",
     "cd build && make --jobs {{ hw.concurrency }}",
     "cd build && make install",
+
+    # ⛔⛔ THE s390x TRIPLE-PREFIXED NAMES, carried from go-zpkg/packages
+    # overrides/gnu.org-gcc.hcl (build.env.s390x TRIPLET = "s390x-linux-gnu" and
+    # the `$TRIPLET-<tool>` loop), which stopped applying when zpkb v0.90.0 made
+    # a standalone recipe the whole recipe (go-zpkg/zpkb#514, #516).
+    #
+    # `make install` names a native compiler by its CONFIGURE triple, which on
+    # s390x is `s390x-ibm-linux-gnu`; the distribution spelling a consumer asks
+    # for (Rust's `cc` crate probes `<triple>-gcc`, autoconf probes
+    # `<host>-gcc`) is `s390x-linux-gnu`, and nothing installs that name. A name
+    # that does not exist is the answer "no compiler" to a probe, silent. The
+    # override's loop is kept as it was, including its `test -e` guard: `ar`,
+    # `nm` and `ranlib` are not installed by this recipe (binutils owns them),
+    # so only the names that exist get a link.
+    #
+    # Scoped to linux/s390x exactly as the override was: the other two
+    # architectures were never given this, and `linux` alone would change what
+    # they ship. x86-64 and aarch64 had their triple link from the pantry
+    # recipe this tree replaced, not from the override, so they are not carried
+    # here (named in the PR rather than decided in this file).
+    {
+      run = <<EOT
+set -eu
+cd "{{prefix}}/bin"
+for tool in gcc g++ cpp c++ ar nm ranlib; do
+  if test -e "$tool"; then ln -sf "$tool" "s390x-linux-gnu-$tool"; fi
+done
+EOT
+      if  = "linux/s390x"
+    },
   ]
 }
 
@@ -191,6 +221,18 @@ test {
   # assembler is exercised: the driver, cc1/cc1plus and `as`.
   script = [
     "\"{{prefix}}/bin/gcc\" --version | grep -F \"{{version}}\"",
+
+    # The s390x names are read off the artifact, and a link that points nowhere
+    # does not count: `test -x` follows it.
+    {
+      run = <<EOT
+set -eu
+for tool in gcc g++ cpp c++; do
+  test -x "{{prefix}}/bin/s390x-linux-gnu-$tool"
+done
+EOT
+      if  = "linux/s390x"
+    },
 
     {
       run = <<EOT
