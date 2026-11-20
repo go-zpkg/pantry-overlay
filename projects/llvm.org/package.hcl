@@ -276,6 +276,14 @@ build {
     ]
     darwin = {
       ARGS = [
+        # Carried from go-zpkg/packages overrides/llvm.org.hcl (deleted with this
+        # change, go-zpkg/zpkb#514/#516). The install rpath the build would
+        # otherwise record is a path that exists only on the runner that built
+        # it; these two are relative to the binary: ../lib for libLLVM, and the
+        # store root for the @rpath/<project>/... install names of zstd, libxml2
+        # and zlib. Not rebuilt on darwin in this change.
+        "-DCMAKE_INSTALL_RPATH=\"@loader_path/../lib;@loader_path/../../..\"",
+
         # The Command Line Tools SDK, as the fragment had it. It is also why the
         # next three are named ON rather than refused: the SDK carries libedit,
         # curses and liblzma (found by the configure on macOS: "Enable editline
