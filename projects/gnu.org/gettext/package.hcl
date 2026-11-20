@@ -188,6 +188,24 @@ build {
       "--without-git",
       "--without-bzip2",
       "--without-xz",
+
+      # ⛔⛔ TWO MORE HOST LIBRARIES, SETTLED OFF — carried from go-zpkg/packages
+      # overrides/gnu.org-gettext.hcl, which stopped applying when zpkb v0.90.0
+      # made a standalone recipe the whole recipe (go-zpkg/zpkb#514, #516). The
+      # override's measurement (zpkb builder's soname census, go-zpkg/zpkb#276):
+      #
+      #   libselinux.so.1 <- lib/libgettextlib-1.0.so
+      #   libgomp.so.1    <- bin/msginit, bin/msgmerge
+      #
+      # Both are auto-detection, still live at 1.0, read in the unpacked source:
+      #   gettext-tools/configure:37530-37535  `--with-selinux` defaults to
+      #     `with_selinux=maybe`; :5399 documents `--without-selinux`.
+      #   gettext-tools/configure:31035-31041  OPENMP_CFLAGS comes from the
+      #     AC_OPENMP probe; :5370 documents `--disable-openmp`.
+      # libgettextlib matters most: msgfmt and its siblings are on the build
+      # path of every recipe with a po/ directory.
+      "--without-selinux",
+      "--disable-openmp",
     ]
   }
 
@@ -248,6 +266,24 @@ test {
     "\"{{prefix}}/bin/gettext\" --version",
     "\"{{prefix}}/bin/xgettext\" --version",
     "\"{{prefix}}/bin/msgfmt\" --version",
+
+    # ⛔⛔ THE ASSERTIONS FOR --without-selinux AND --disable-openmp, read off the
+    # artifact: a linked library is a NEEDED entry, a literal string in the ELF
+    # dynamic section, so a file names `libselinux` or `libgomp` if and only if
+    # configure found it. The two files are the ones the census named.
+    {
+      run = <<EOT
+set -e
+for f in "{{prefix}}"/lib/libgettextlib*; do
+  test -f "$f"
+  # `! cmd` is exempt from `set -e`, so the refusal is spelled out.
+  if grep -q libselinux "$f"; then echo "$f links libselinux" >&2; exit 1; fi
+done
+for b in msgmerge msginit; do
+  if grep -q libgomp "{{prefix}}/bin/$b"; then echo "$b links libgomp" >&2; exit 1; fi
+done
+EOT
+    },
 
     # ⭐ A ROUND TRIP THROUGH THE TOOLSET, because --version proves none of it:
     # extract strings from a C file, compile the catalogue, and read it back.

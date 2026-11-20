@@ -286,6 +286,40 @@ provides = [
   "sbin/zic",
 ]
 
+# ⛔⛔ GCONV_PATH, carried from go-zpkg/packages overrides/gnu.org-glibc.hcl
+# (`merge.runtime.env`), which stopped applying when zpkb v0.90.0 made a
+# standalone recipe the whole recipe (go-zpkg/zpkb#514, #516).
+#
+# glibc compiles its gconv directory in at build time: Makeconfig
+# `gconvdir = $(libdir)/gconv`, and `--prefix={{prefix}}` with no `--libdir`
+# leaves libdir at {{prefix}}/lib. At build time {{prefix}} is the staging path
+# (`+builddir`), and the artifact does not stay where it was built, so iconv
+# looks in a directory that is gone and silently falls back to the charsets
+# built into libc. The override's measurement (second sovereign generation):
+#
+#   idn2: libiconv required for non-UTF-8 character encoding: ANSI_X3.4-1968
+#
+# which reads as a missing LIBRARY and is a missing DIRECTORY — libiconv is not
+# required on glibc at all. The modules ship in the artifact; only the pointer
+# to them was missing, and `runtime.env` is the mechanism for a pointer.
+#
+# The path is the recipe's own libdir, not the override's `lib/glibc-<marketing>`:
+# that spelling belonged to the pantry recipe this one replaced.
+runtime {
+  env = {
+    GCONV_PATH = "{{prefix}}/lib/gconv"
+  }
+}
+
+# ⛔ THE OVERRIDE'S OTHER HALF IS NOT CARRIED, AND THAT IS A READING, NOT AN
+# OMISSION. Its `build.env.s390x.LDSO = "ld64.so.1"`, `test.env.s390x.LDSO` and
+# the empty-LDSO guard all fix a `ln -sf ../lib/glibc-<marketing>/$LDSO ld.so`
+# step that existed in the pantry's script. This recipe has no such step, no
+# `$LDSO` and no `ld.so` link — `script` below is configure, make, make install
+# — so there is no empty variable to guard. The loader name the builder needs on
+# s390x comes from zpkb's own artifact.LoaderNameFor, which the override cites as
+# carrying the same `ld64.so.1`.
+
 test {
   script = [
     # The library and the loader are the point; assert they are installed
@@ -296,6 +330,13 @@ test {
     # A program that has to WORK, not merely exist: getconf reads the libc's
     # own configuration and is the cheapest end-to-end witness.
     "\"{{prefix}}/bin/getconf\" GNU_LIBC_VERSION",
+
+    # ⛔⛔ THE TARGET OF GCONV_PATH, read off the artifact. A `runtime.env` that
+    # names a directory nothing was installed into is the defect again with a
+    # tidier error: ISO8859-15.so is a real module (not one of the converters
+    # built into libc), so its presence under the pointed-at directory is what
+    # makes the pointer worth having.
+    "test -f \"{{prefix}}/lib/gconv/ISO8859-15.so\"",
 
     # ⛔ AND THE TWO ASSERTIONS THAT WOULD CATCH THE AUTO-DETECTIONS COMING
     # BACK. If a future edit drops `--with-gd=no`, memusagestat reappears and
