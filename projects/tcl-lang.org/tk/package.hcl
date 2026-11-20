@@ -38,14 +38,19 @@
 # (Mac/BuildScript/build-installer.py:300), and Aqua is the toolkit a Mac user
 # has a display for. So darwin passes `--enable-aqua` and takes no X library.
 #
-# ⛔ NOT DONE, WITH THE REASON: `--enable-libcups` (:427-469, 9.0 only, default
-# on) is PINNED OFF. It is auto-detected through `cups-config` and a miss is
-# silent, so it must be named; but libcups is a recipe this tree does not have
-# (`openprinting.github.io/cups` is a dependencies-only fragment that cannot
-# resolve once go-zpkg/zpkb#514 lands), and declaring a fragment makes this
-# recipe unresolvable. What is lost is Tk 9's `tk print` to a CUPS queue. This is
-# a stated gap, to be closed by writing the cups recipe, not a decision that
-# printing is unwanted.
+#   CUPS — :427-469, 9.0 only, default on, inside the same `tk_aqua = no`
+#          fence. It is auto-detected by running a bare `cups-config` (:441) and
+#          then compiling `cups/cups.h` (:458-462), and a miss sets found_cups=no
+#          and says nothing — even with `--enable-libcups` (:432-435 only
+#          distinguishes "no"). The header is looked for through CPPFLAGS only
+#          (CUPS_CFLAGS is just -DHAVE_CUPS, :448) and the library through
+#          LDFLAGS (`cups-config --libs` prints only -lcups), so this recipe puts
+#          `cups-config` on PATH for configure and passes -I and -L of
+#          openprinting.github.io/cups. tkConfig.sh does not record CUPS (read off
+#          the scratch install), so the TEST reads the outcome off libtcl9tk9.0:
+#          it must name libcups and import the cups calls of unix/tkUnixPrint.c.
+#          What it gives: Tk 9's `tk print` to a CUPS queue of the host's
+#          scheduler (see openprinting.github.io/cups for where libcups looks).
 #
 # ⛔ THE TWO MACPORTS PATCHES THE MONOLITH FETCHED WITH curl ARE NOT NEEDED.
 # They were applied only `if: <8.6.14` ("fixed in 8.6.14", the pantry's own
@@ -80,6 +85,9 @@ dependencies = {
     "x.org/xrender"              = "^0.9"
     "freedesktop.org/fontconfig" = "^2"
     "freetype.org"               = "^2"
+
+    # unix/configure.ac:427-469, see the header. Darwin is Aqua and never uses it.
+    "openprinting.github.io/cups" = "^2.4"
   }
 
   "zlib.net" = "^1.3"
@@ -146,9 +154,8 @@ build {
       #   --with-encoding     default utf-8. Kept.
       #   --with-x            default on where X is used; passed through
       #                       --x-includes/--x-libraries below.
-      #   --enable-libcups    PINNED OFF (see the header): auto-detected,
-      #                       silent on a miss, and no libcups recipe exists.
-      "--disable-libcups",
+      #   --enable-libcups    NAMED on X11 targets below (see the header); on
+      #                       darwin (Aqua) the block does not exist.
     ]
 
     # X11 targets: the two NAMED detections, and where X lives. configure.ac's
@@ -159,11 +166,15 @@ build {
       ARGS = [
         "--enable-xft",
         "--enable-xss",
+        "--enable-libcups",
         "--x-includes={{deps.x.org/x11.prefix}}/include",
         "--x-libraries={{deps.x.org/x11.prefix}}/lib",
       ]
-      CPPFLAGS = "-I{{deps.x.org/protocol.prefix}}/include -I{{deps.x.org/xext.prefix}}/include -I{{deps.x.org/xscrnsaver.prefix}}/include"
-      LDFLAGS  = "-L{{deps.x.org/xext.prefix}}/lib -L{{deps.x.org/xscrnsaver.prefix}}/lib"
+      CPPFLAGS = "-I{{deps.x.org/protocol.prefix}}/include -I{{deps.x.org/xext.prefix}}/include -I{{deps.x.org/xscrnsaver.prefix}}/include -I{{deps.openprinting.github.io/cups.prefix}}/include"
+      LDFLAGS  = "-L{{deps.x.org/xext.prefix}}/lib -L{{deps.x.org/xscrnsaver.prefix}}/lib -L{{deps.openprinting.github.io/cups.prefix}}/lib"
+
+      # Where configure finds the bare `cups-config` (:441).
+      CUPSBIN = "{{deps.openprinting.github.io/cups.prefix}}/bin"
     }
 
     # darwin: Aqua (see the header). --enable-xft/--enable-xss would be inert
@@ -181,7 +192,7 @@ build {
   skip = ["fix-machos"]
 
   script = [
-    "cd unix && ./configure $ARGS",
+    "cd unix && PATH=\"$${CUPSBIN:-/nonexistent}:$PATH\" ./configure $ARGS",
     "cd unix && make --jobs {{ hw.concurrency }}",
     "cd unix && make install",
 
@@ -231,6 +242,14 @@ case "$(uname -s)" in
     grep -q -e '-DHAVE_XSS=1' "$cfg" || { echo "Tk was built WITHOUT XScreenSaver" >&2; exit 1; }
     grep -q -e '-lXft' "$pc" || { echo "tk.pc does not link Xft" >&2; exit 1; }
     grep -q -e '-lXss' "$pc" || { echo "tk.pc does not link Xss" >&2; exit 1; }
+    # CUPS is read off the library: configure's miss is silent and tkConfig.sh
+    # does not record it. libcups is a DT_NEEDED entry and the calls of
+    # unix/tkUnixPrint.c are imported symbols.
+    lib="{{prefix}}/lib/libtcl9tk9.0.so"
+    grep -aq -e 'libcups' "$lib" || { echo "Tk was built WITHOUT libcups (no tk print)" >&2; exit 1; }
+    for f in cupsGetNamedDest cupsCopyDestInfo cupsCreateDestJob cupsStartDestDocument cupsFinishDestDocument; do
+      grep -aq -e "$f" "$lib" || { echo "libtcl9tk9.0 does not import $f" >&2; exit 1; }
+    done
     ! grep -q -e '-DMAC_OSX_TK=1' "$cfg"
     ;;
 esac
@@ -290,6 +309,13 @@ against Tcl 9.0.4 built from the previous recipe:
     (weak, a darwin linker choice) and libXext;
   * an Aqua Tk configured with `--enable-aqua` built and installed, with
     `-DMAC_OSX_TK=1` and no X library in TK_LIBS.
+
+  * an X11 Tk configured with `--enable-libcups`, `cups-config` on PATH and
+    CPPFLAGS/LDFLAGS at a scratch openprinting.github.io/cups install printed
+    "checking whether to use libcups... yes", "checking for cups/cups.h... yes",
+    built, and libtcl9tk9.0.dylib linked libcups.2.dylib and imported
+    cupsGetNamedDest, cupsCopyDestInfo, cupsCreateDestJob, cupsStartDestDocument,
+    cupsFinishDestDocument; tkConfig.sh and tk.pc recorded nothing about CUPS.
 
 NOT RUN: `package require Tk` (no X server for the X build, and Aqua without a
 window session can hang), the linux flag set (the CPPFLAGS/LDFLAGS for the
