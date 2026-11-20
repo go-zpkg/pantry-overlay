@@ -235,10 +235,22 @@ jobs:
       # and leaves this ceiling where it was. So the ceiling measures one of the
       # two kinds of work and the issue tracks both.
       #
+      # ⭐ AND THAT PROGRESS BAR IS NOW ONE COMMAND, from zpkb v0.87.0
+      # (go-zpkg/zpkb#509): `zpkb closure -build -require-standalone -overlay .
+      # go-zpkg/base-toolchain` does the same three-way split the paragraph above
+      # did by hand. Measured 2026-11-19, after libssh2.org:
+      #
+      #   77 project(s); 52 standalone, 5 fragment(s), 20 absent
+      #
+      # ⚠ The two lines are not strictly comparable: 2026-11-15 was counted by
+      # hand over a 70-project closure, 2026-11-19 by the tool over 77, and the
+      # closure grows as recipes declare what they really need. They point the
+      # same way, and only the second can be re-run.
+      #
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.82.0 lint --dir .
-          --require-standalone --max-fragments 185
+          --require-standalone --max-fragments 184
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
