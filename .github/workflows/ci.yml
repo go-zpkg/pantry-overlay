@@ -137,9 +137,9 @@ jobs:
       # go.dev/dev-simd and rust-lang.org/cargo now use for their per-platform
       # bootstrap, and v0.94.0 refuses the key. Measured on this branch (292
       # recipes) with v0.95.0 before bumping: plain 0, `--require-standalone
-      # --max-fragments 124` at the ceiling, `--require-provenance` 0,
+      # --max-fragments 123` at the ceiling, `--require-provenance` 0,
       # `--require-hcl` 0, `--render-scripts` 0, `--require-known-env` 0 — the
-      # same six verdicts as under v0.94.0, 124 fragments under both — and
+      # same six verdicts as under v0.94.0, 123 fragments under both — and
       # `--max-script-fetches` counts 1 (4 under v0.94.0, before the recipes
       # moved).
       - name: every recipe can be read
@@ -522,7 +522,7 @@ jobs:
       - name: no recipe becomes a fragment that was not one already
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.95.0 lint --dir .
-          --require-standalone --max-fragments 124
+          --require-standalone --max-fragments 123
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
