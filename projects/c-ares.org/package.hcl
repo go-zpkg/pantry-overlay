@@ -40,43 +40,50 @@ distributable {
 
 build {
   dependencies = {
+    "cmake.org"    = "^3"
     "gnu.org/make" = "*"
   }
 
   env {
-    # Every switch configure.ac defines, stated (line numbers in configure.ac):
-    #   :78       static libraries are enabled, and shared ones by default.
-    #   :80-83    --disable-warnings: strict compiler warnings OFF, so a newer
-    #             compiler cannot turn one into a build failure.
-    #   :85-104   --enable-symbol-hiding: ON (it defaults to "maybe").
-    #   :106-115  --disable-tests: the GoogleTest suite is OFF (it is otherwise
-    #             built whenever GoogleTest is found).
-    #   :117-120  --enable-cares-threads: thread safety ON.
-    #   :122-127  --with-random=/dev/urandom, the stated default.
-    #   :367-376  --disable-libgcc: do not add -lgcc.
+    # ⛔ THE PROJECT'S CMAKE BUILD, NOT AUTOTOOLS: only CMakeLists.txt:793-804
+    # installs c-ares-config.cmake, c-ares-config-version.cmake and the
+    # c-ares::cares targets, and gRPC's `find_package(c-ares 1.13.0 REQUIRED)`
+    # (cmake/cares.cmake:38) is a config-mode search that the autotools build
+    # cannot satisfy. libcares.pc is installed too (:814-815).
+    #
+    # Options (CMakeLists.txt:36-47):
+    #   CARES_STATIC=ON / CARES_SHARED=ON   both, as the autotools recipe built
+    #   CARES_STATIC_PIC=ON                 :39 default OFF; the static copy is
+    #                                       linked into shared objects
+    #   CARES_SYMBOL_HIDING=ON              :43 default OFF
+    #   CARES_THREADS=ON                    :44 thread safety, the default
+    #   CARES_BUILD_TESTS=OFF               :40 the GoogleTest suite
+    #   CARES_BUILD_TOOLS=OFF               :42 default ON; the autotools build
+    #                                       kept ahost and adig out of the
+    #                                       install (src/tools/Makefile.am:8)
+    #   CARES_WERROR=OFF                    :46 warnings never fail the build
     ARGS = [
-      "--prefix={{prefix}}",
-      "--enable-shared",
-      "--enable-static",
-      "--disable-warnings",
-      "--enable-symbol-hiding",
-      "--disable-tests",
-      "--enable-cares-threads",
-      "--with-random=/dev/urandom",
-      "--disable-libgcc",
-      "--disable-dependency-tracking",
+      "-DCMAKE_INSTALL_PREFIX={{prefix}}",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_INSTALL_LIBDIR=lib",
+      "-DCARES_STATIC=ON",
+      "-DCARES_SHARED=ON",
+      "-DCARES_STATIC_PIC=ON",
+      "-DCARES_SYMBOL_HIDING=ON",
+      "-DCARES_THREADS=ON",
+      "-DCARES_BUILD_TESTS=OFF",
+      "-DCARES_BUILD_TOOLS=OFF",
+      "-DCARES_WERROR=OFF",
+      "-DCARES_RANDOM_FILE=/dev/urandom",
     ]
   }
 
   script = [
-    "./configure $ARGS",
-    "make --jobs {{hw.concurrency}}",
-    "make install",
+    "cmake -S . -B build $ARGS",
+    "cmake --build build --parallel {{hw.concurrency}}",
+    "cmake --install build",
   ]
 }
-
-# The ahost and adig programs are `noinst_PROGRAMS` (src/tools/Makefile.am:8),
-# so `make install` ships only the library, headers and libcares.pc.
 
 test {
   dependencies = {
@@ -86,6 +93,7 @@ test {
 
   script = [
     "test -f {{prefix}}/include/ares.h",
+    "test -f {{prefix}}/lib/cmake/c-ares/c-ares-config.cmake",
     "pkg-config --exists libcares",
     {
       fixture = {
@@ -119,11 +127,9 @@ EOT
 
 provenance {
   read = [
-    "configure.ac",         # :78 static; :80 warnings; :85 symbol hiding; :106 tests; :117 threads; :122 random; :367 libgcc
+    "CMakeLists.txt",       # :36-47 options; :793-816 config files, targets and libcares.pc installed
     "LICENSE.md",           # "MIT License"
-    "Makefile.am",          # :49 SUBDIRS; :51-52 libcares.pc installed
-    "src/tools/Makefile.am", # :4-8 ahost and adig are noinst_PROGRAMS
-    "INSTALL.md",           # the autotools build
+    "src/tools/Makefile.am", # :4-8 ahost and adig are noinst_PROGRAMS (the autotools install)
   ]
 
   consulted = [
@@ -132,6 +138,8 @@ provenance {
 
   note = <<EOT
 NOT BUILT: written from the sources and the signed release; not run on a
-builder. The CMake build the project also ships was not used.
+builder. Switched from the autotools build to the project's CMake build so
+that c-ares-config.cmake is installed (gRPC needs it); same version and pins.
+The tarball still ships `configure`, but it is no longer used.
 EOT
 }
