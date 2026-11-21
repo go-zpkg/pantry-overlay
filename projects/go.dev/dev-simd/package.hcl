@@ -61,6 +61,16 @@ distributable {
   }
 }
 
+# The bootstrap toolchain, one entry per build platform (only the entry for the
+# target is fetched). Same digests as go.dev.
+sources = [
+  { url = "https://go.dev/dl/go1.26.11.linux-amd64.tar.gz", sha256 = "9849f4e04ee35303714e34fbc3ac8ab44ea3e448a95aa182f91e3b9b79c710ec", dest = ".bootstrap", "strip-components" = 1, platforms = ["linux/x86-64"] },
+  { url = "https://go.dev/dl/go1.26.11.linux-arm64.tar.gz", sha256 = "6c2f29b458b5add0835f18b776f69c8881a6d88428f1484a6da55755e620757e", dest = ".bootstrap", "strip-components" = 1, platforms = ["linux/aarch64"] },
+  { url = "https://go.dev/dl/go1.26.11.linux-s390x.tar.gz", sha256 = "7d991c350ab49393c4c66e2ddb33c60e5c32bb1446d270afc810efcd275563ac", dest = ".bootstrap", "strip-components" = 1, platforms = ["linux/s390x"] },
+  { url = "https://go.dev/dl/go1.26.11.darwin-amd64.tar.gz", sha256 = "394baae971332f2bc783d6e2004ae57101479bd3b06ed8209a3fe3570d4ce498", dest = ".bootstrap", "strip-components" = 1, platforms = ["darwin/x86-64"] },
+  { url = "https://go.dev/dl/go1.26.11.darwin-arm64.tar.gz", sha256 = "e3a42e67a7a8acf450ebada2b074c7ca863000ca514907b7185b45e8f5cdff57", dest = ".bootstrap", "strip-components" = 1, platforms = ["darwin/aarch64"] },
+]
+
 build {
   dependencies = {
     "curl.se" = "*"
@@ -79,22 +89,8 @@ build {
       run = <<EOT
 set -eu
 # ⛔ BOOTSTRAP: src/make.bash:74 `bootgo=1.24.6`, cmd/dist/buildtool.go:127. The
-# same 1.26.11 archives, digests and checks as go.dev (https://go.dev/dl/?mode=json
-# for the digests, a second fetch from dl.google.com/go to confirm each).
-case "$(uname -s)-$(uname -m)" in
-  Linux-x86_64)               B=linux-amd64;  SUM=9849f4e04ee35303714e34fbc3ac8ab44ea3e448a95aa182f91e3b9b79c710ec ;;
-  Linux-aarch64|Linux-arm64)  B=linux-arm64;  SUM=6c2f29b458b5add0835f18b776f69c8881a6d88428f1484a6da55755e620757e ;;
-  Linux-s390x)                B=linux-s390x;  SUM=7d991c350ab49393c4c66e2ddb33c60e5c32bb1446d270afc810efcd275563ac ;;
-  Darwin-x86_64)              B=darwin-amd64; SUM=394baae971332f2bc783d6e2004ae57101479bd3b06ed8209a3fe3570d4ce498 ;;
-  Darwin-arm64)               B=darwin-arm64; SUM=e3a42e67a7a8acf450ebada2b074c7ca863000ca514907b7185b45e8f5cdff57 ;;
-  *) echo "no pinned bootstrap Go for $(uname -s)-$(uname -m)" >&2; exit 1 ;;
-esac
-T="go1.26.11.$B.tar.gz"
-curl -fsSLo "$T" "https://go.dev/dl/$T"
-if command -v sha256sum >/dev/null 2>&1; then echo "$SUM  $T" | sha256sum -c -
-else echo "$SUM  $T" | shasum -a 256 -c -; fi
-mkdir .bootstrap
-tar xzf "$T" -C .bootstrap --strip-components=1
+# same 1.26.11 archives and digests as go.dev (https://go.dev/dl/?mode=json),
+# unpacked into .bootstrap by the top-level `sources`, one entry per platform.
 .bootstrap/bin/go version
 
 # ⛔ VERSION. The commit tarball has none and no .git, so cmd/dist could not

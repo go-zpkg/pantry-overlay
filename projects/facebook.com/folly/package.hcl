@@ -61,6 +61,11 @@ build {
       # CMakeLists.txt:91-97 BUILD_SHARED_LIBS defaults OFF; folly does not
       # commit to a stable ABI (its own text), so static.
       "-DBUILD_SHARED_LIBS=OFF",
+      # CMake/folly-deps.cmake:43-95 fetches a missing package with FetchContent
+      # (include at :46, MakeAvailable at :92). With this switch a miss is an
+      # error, never a download. The OpenSSL ExternalProject (:383) is not
+      # covered, but is reached only when OpenSSL is not found, and it is declared.
+      "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
       # :98-102 the Python bindings; ON needs Cython and a shared build.
       "-DPYTHON_EXTENSIONS=OFF",
       # :422-423 tests and benchmarks default OFF; :445-453 GMock and GTest are
@@ -124,8 +129,8 @@ read) and are not declared.
 
 NETWORK: folly-deps.cmake:43-95 FETCHES a missing Boost, FastFloat, gflags or
 glog at configure time. They are declared dependencies and put on
-CMAKE_PREFIX_PATH so they are found; a miss would reach the network and is not
-excluded here, because that needs an actual configure run to check.
+CMAKE_PREFIX_PATH so they are found, and FETCHCONTENT_FULLY_DISCONNECTED=ON
+turns a miss into a configure error. Not run, so not confirmed.
 
 BOOST: "<1.89" is inherited from the fragment; the cap was not re-derived.
 Folly asks for 1.69.0 or newer (:122).
