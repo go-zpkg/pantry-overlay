@@ -133,7 +133,7 @@ fi
 # no-self-update for a package-managed binary. vendored-openssl and otel are off.
 cargo install --locked --path . --root {{prefix}} \
   --no-default-features \
-  --features curl-backend,reqwest-native-tls,reqwest-rustls-tls,no-self-update
+  --features "reqwest-native-tls,reqwest-rustls-tls,no-self-update,curl-backend"
 # rustup-init is the one binary; `rustup` is it under another argv[0].
 cp {{prefix}}/bin/rustup-init {{prefix}}/bin/rustup
 EOT
