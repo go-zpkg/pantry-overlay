@@ -48,23 +48,46 @@ distributable {
 
 build {
   dependencies = {
+    "cmake.org"                  = "^3"
     "freedesktop.org/pkg-config" = "*"
     "gnu.org/make"               = "*"
   }
 
   env {
-    # The Makefile (the project's plain build; CMake is the other one) reads
-    # prefix, and finds Abseil through `pkg-config` (Makefile:6-24, ABSL_DEPS),
-    # so PKG_CONFIG_PATH must reach the Abseil prefix. `all` builds BOTH
-    # obj/libre2.a and the shared library (Makefile:110), and `install` installs
-    # both plus re2.pc (Makefile:322-348). The tests need GoogleTest and
-    # Benchmark and are not built by `all`.
-    PKG_CONFIG_PATH = "{{deps.abseil.io.prefix}}/lib/pkgconfig"
+    # ⛔ THE PROJECT'S CMAKE BUILD, NOT THE MAKEFILE: only CMakeLists.txt
+    # :253-281 installs re2Config.cmake, re2ConfigVersion.cmake and the
+    # re2::re2 target, and gRPC's `find_package(re2 REQUIRED)`
+    # (cmake/re2.cmake:44) is a config-mode search the Makefile's install
+    # (Makefile:322-348, headers, libraries and re2.pc only) cannot satisfy.
+    # re2.pc is installed by the CMake build too (:281).
+    #
+    # CMakeLists.txt:6 needs cmake 3.22. Options: :15 BUILD_SHARED_LIBS (default
+    # OFF, kept: static, built position-independent so gRPC can link it into
+    # shared objects, as the abseil and protobuf recipes do); :16 RE2_USE_ICU
+    # OFF; :19 USEPCRE OFF; :30-32 tests and benchmarks OFF (they need
+    # GoogleTest and Benchmark); :36 RE2_INSTALL ON. Abseil is found by
+    # find_package(absl REQUIRED) (:94), so its prefix goes on
+    # CMAKE_PREFIX_PATH.
+    ARGS = [
+      "-DCMAKE_INSTALL_PREFIX={{prefix}}",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_INSTALL_LIBDIR=lib",
+      "-DCMAKE_PREFIX_PATH={{deps.abseil.io.prefix}}",
+      "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+      "-DBUILD_SHARED_LIBS=OFF",
+      "-DRE2_USE_ICU=OFF",
+      "-DUSEPCRE=OFF",
+      "-DRE2_TEST=OFF",
+      "-DRE2_BENCHMARK=OFF",
+      "-DRE2_BUILD_TESTING=OFF",
+      "-DRE2_INSTALL=ON",
+    ]
   }
 
   script = [
-    "make --jobs {{hw.concurrency}} prefix={{prefix}}",
-    "make install prefix={{prefix}}",
+    "cmake -S . -B build $ARGS",
+    "cmake --build build --parallel {{hw.concurrency}}",
+    "cmake --install build",
   ]
 }
 
@@ -80,6 +103,7 @@ test {
 
   script = [
     "test -f {{prefix}}/include/re2/re2.h",
+    "test -f {{prefix}}/lib/cmake/re2/re2Config.cmake",
     "pkg-config --exists re2",
     {
       # The project's own install test (testinstall.cc), the same call the
@@ -120,7 +144,8 @@ EOT
 
 provenance {
   read = [
-    "Makefile",        # :6-24 Abseil via pkg-config; :61 prefix; :85 SONAME; :110 all; :322-348 install
+    "CMakeLists.txt",  # :6 cmake 3.22; :15-36 options; :94 find_package(absl); :253-281 install of targets, re2Config.cmake, re2.pc
+    "Makefile",        # :322-348 install (no cmake config, hence the CMake build)
     "LICENSE",         # BSD three-clause
     "testinstall.cc",  # the test the fixture reproduces
     "re2.pc.in",       # the installed pkg-config file
@@ -133,5 +158,7 @@ provenance {
   note = <<EOT
 NOT BUILT: written from the sources and the stored release asset; not run on a
 builder. The Abseil recipe (abseil.io) is written in the same campaign.
+Switched from the Makefile to the project's CMake build so that
+re2Config.cmake is installed (gRPC needs it); same version and pin.
 EOT
 }
