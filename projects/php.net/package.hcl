@@ -30,14 +30,14 @@ dependencies = {
   "curl.se"                   = "^8"
   "github.com/kkos/oniguruma" = "^6"
   "gnome.org/libxml2"         = "*"
-  "gnome.org/libxslt"         = ">=1.1.0<1.1.43"
+  "gnome.org/libxslt"         = ">=1.1.0"
   "gnu.org/gettext"           = "^1"
   "gnu.org/gmp"               = "^6"
   "gnu.org/libiconv"          = "^1"
   "google.com/webp"           = "^1"
   "ijg.org"                   = "^9"
   "libpng.org"                = "^1"
-  "libsodium.org"             = "<1.0.19"
+  "libsodium.org"             = ">=1.0.8"
   "libzip.org"                = "^1.9"
   "openldap.org"              = "^2"
   "openssl.org"               = "*"
@@ -216,6 +216,8 @@ provenance {
     "configure --help",                    # every --with/--enable/--disable switch named in ARGS
     "buildconf",                           # the tarball ships configure; no autoconf needed
     "ext/",                                # extension directories offered by this release
+    "ext/sodium/config.m4:7",              # libsodium >= 1.0.8
+    "ext/xsl/config.m4:7",                 # libxslt >= 1.1.0
   ]
 
   consulted = []
@@ -227,9 +229,13 @@ reading, and `zpkb lint` was run.
 
 ⚠ UNKNOWNS: (1) the tarball ships configure and generated parsers, so autoconf,
 bison and re2c from the previous recipe are dropped; this was not exercised.
-(2) pkg-config must find every library through PKG_CONFIG_PATH; libxslt is
-capped at <1.1.43 and libsodium at <1.0.19 as the previous recipe had them,
-the reason for either was not re-derived. (3) --with-jpeg and --with-webp take
+(2) pkg-config must find every library through PKG_CONFIG_PATH; the floors
+are the ones PHP 8.6.0 itself states: ext/sodium/config.m4 line 7,
+PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.8]), and ext/xsl/config.m4
+line 7, PKG_CHECK_MODULES([XSL], [libxslt >= 1.1.0]). The upper caps the
+previous recipe inherited (libxslt <1.1.43, libsodium <1.0.19) are removed:
+neither file states a ceiling, and the libsodium one made the recipe
+unresolvable against libsodium.org 1.0.22 of this tree. (3) --with-jpeg and --with-webp take
 effect only with the bundled libgd (--enable-gd, no --with-external-gd). (4) the
 versions block reads php/php-src tags; 8.6.0 was released 2026-11-19.
 
