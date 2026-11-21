@@ -43,7 +43,6 @@ dependencies = {
   "lz4.org"                           = "^1"
   "openssl.org"                       = "^3"
   "pcre.org/v2"                       = "^10"
-  "python.org"                        = "~3.11"
   "sourceware.org/bzip2"              = "^1"
   "tukaani.org/xz"                    = "^5"
   "zlib.net"                          = "^1"
@@ -81,9 +80,26 @@ build {
   #                       virtual-filesystem watcher; the inotify/FSEvents
   #                       watchers are what remains.
   #   BUILD_SHARED_LIBS OFF   :35, the default, stated.
-  #   USE_SYS_PYTHON OFF      :45, :397-403: ON searches /usr/bin; the python.org
-  #                       dependency is passed through Python3_EXECUTABLE below,
-  #                       which makes FindPython skip its search.
+  #   USE_SYS_PYTHON OFF      :45, :397-403: the default, stated. It only picks
+  #                       where FindPython3 searches, and Python is off (next).
+  #   CMAKE_DISABLE_FIND_PACKAGE_Python3 ON  CMake's own switch (cmake
+  #                       --help-variable CMAKE_DISABLE_FIND_PACKAGE_<PackageName>:
+  #                       every non-REQUIRED find_package() of that package
+  #                       fails). The find_package(Python3 ...) calls at :406 and
+  #                       :412 are not REQUIRED, so Python3_Development_FOUND is
+  #                       false and :416-449 is skipped: no pywatchman (:417-445),
+  #                       no watchman/python scripts, no watchman/integration, and
+  #                       the :789 test target. WHY: :438-439 installs pywatchman
+  #                       with `setup.py install --root $DESTDIR${CMAKE_INSTALL_PREFIX}`,
+  #                       setup.py's --root is a ROOT that the install prefix is
+  #                       appended to, so the files land under <prefix>/<prefix>/...
+  #                       (a doubled path). There is no watchman option to turn
+  #                       Python off or to set that path. COST: no pywatchman, no
+  #                       watchman-make / watchman-wait. The C++ `watchman` binary
+  #                       is unaffected (no Python in its sources, :735).
+  #                       The other Python3 uses are in fbcode_builder modules
+  #                       (FBPythonBinary, FBThriftPythonLibrary) reached only
+  #                       from :446 or from Eden/Thrift code, both off.
   #   WATCHMAN_USE_XDG_STATE_HOME ON  :173: the state directory is per user
   #                       ($XDG_STATE_HOME/watchman), not a path baked under the
   #                       install prefix; INSTALL_WATCHMAN_STATE_DIR OFF (:168,
@@ -95,13 +111,13 @@ build {
     ARGS = [
       "-DCMAKE_INSTALL_PREFIX={{prefix}}",
       "-DCMAKE_BUILD_TYPE=Release",
-      "-DCMAKE_PREFIX_PATH={{deps.boost.org.prefix}};{{deps.facebook.com/edencommon.prefix}};{{deps.facebook.com/fb303.prefix}};{{deps.facebook.com/fbthrift.prefix}};{{deps.facebook.com/folly.prefix}};{{deps.facebook.com/mvfst.prefix}};{{deps.facebook.com/wangle.prefix}};{{deps.facebook.com/zstd.prefix}};{{deps.fmt.dev.prefix}};{{deps.gflags.github.io.prefix}};{{deps.github.com/Cyan4973/xxHash.prefix}};{{deps.github.com/facebookincubator/fizz.prefix}};{{deps.github.com/fastfloat/fast_float.prefix}};{{deps.github.com/google/googletest.prefix}};{{deps.google.com/glog.prefix}};{{deps.google.github.io/snappy.prefix}};{{deps.libevent.org.prefix}};{{deps.libsodium.org.prefix}};{{deps.lz4.org.prefix}};{{deps.openssl.org.prefix}};{{deps.pcre.org/v2.prefix}};{{deps.python.org.prefix}};{{deps.sourceware.org/bzip2.prefix}};{{deps.tukaani.org/xz.prefix}};{{deps.zlib.net.prefix}}",
+      "-DCMAKE_PREFIX_PATH={{deps.boost.org.prefix}};{{deps.facebook.com/edencommon.prefix}};{{deps.facebook.com/fb303.prefix}};{{deps.facebook.com/fbthrift.prefix}};{{deps.facebook.com/folly.prefix}};{{deps.facebook.com/mvfst.prefix}};{{deps.facebook.com/wangle.prefix}};{{deps.facebook.com/zstd.prefix}};{{deps.fmt.dev.prefix}};{{deps.gflags.github.io.prefix}};{{deps.github.com/Cyan4973/xxHash.prefix}};{{deps.github.com/facebookincubator/fizz.prefix}};{{deps.github.com/fastfloat/fast_float.prefix}};{{deps.github.com/google/googletest.prefix}};{{deps.google.com/glog.prefix}};{{deps.google.github.io/snappy.prefix}};{{deps.libevent.org.prefix}};{{deps.libsodium.org.prefix}};{{deps.lz4.org.prefix}};{{deps.openssl.org.prefix}};{{deps.pcre.org/v2.prefix}};{{deps.sourceware.org/bzip2.prefix}};{{deps.tukaani.org/xz.prefix}};{{deps.zlib.net.prefix}}",
       "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON",
       "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
       "-DENABLE_EDEN_SUPPORT=OFF",
       "-DBUILD_SHARED_LIBS=OFF",
       "-DUSE_SYS_PYTHON=OFF",
-      "-DPython3_EXECUTABLE={{deps.python.org.prefix}}/bin/python3",
+      "-DCMAKE_DISABLE_FIND_PACKAGE_Python3=ON",
       "-DWATCHMAN_USE_XDG_STATE_HOME=ON",
       "-DINSTALL_WATCHMAN_STATE_DIR=OFF",
     ]
@@ -125,6 +141,7 @@ test {
     "test -x {{prefix}}/bin/watchman",
     "watchman --version",
     "test ! -e {{prefix}}/bin/watchmanctl",
+    "test ! -e {{prefix}}/bin/watchman-make",
   ]
 }
 
@@ -157,11 +174,19 @@ COST: no `watchmanctl`. INSTALLED: `bin/watchman`, the C++ binary that is both
 the daemon and the client (CMakeLists.txt:735, :765). The test refuses a
 `watchmanctl` so the omission cannot go unnoticed.
 
-Also unchecked: CMakeLists.txt:434-447 builds and installs pywatchman and
-watchman/python's scripts (watchman-make, watchman-wait, ...) when a Python
-with development files is found; `setup.py install --root <prefix>` is run with
-the prefix as ROOT, so those land under a doubled path inside the prefix, which
-is why only bin/watchman is declared in `provides`.
+PYTHON IS OFF, STATED. CMakeLists.txt:434-447 builds and installs pywatchman
+and watchman/python's scripts (watchman-make, watchman-wait, ...) when a Python
+with development files is found, and `setup.py install --root <prefix>` (:438-439)
+takes the prefix as a ROOT that the install prefix is appended to, so those landed
+under a doubled path inside the prefix. No option of the project turns this off,
+so `-DCMAKE_DISABLE_FIND_PACKAGE_Python3=ON` (a CMake variable, documented in
+`cmake --help-variable CMAKE_DISABLE_FIND_PACKAGE_<PackageName>`) makes the
+non-REQUIRED find_package(Python3) at :406 and :412 fail. The python.org
+dependency is gone with it. COST: no pywatchman and no watchman-make /
+watchman-wait. Not verified by a build: that nothing else in the configure step
+needs Python3 (the grep over the tree found the other uses in fbcode_builder's
+FBPythonBinary and FBThriftPythonLibrary modules, reached from :446 and from
+Thrift/Eden code only).
 
 Dependencies: the fragment's linux-only libstdcxx/libcxx lines are dropped (the
 sibling recipes in this stack, edencommon among them, carry none). With Eden off
@@ -170,7 +195,8 @@ PCRE2 and OpenSSL directly; the rest of the stack is listed because
 edencommon's installed config re-finds them (find_dependency), and each is
 named in CMAKE_PREFIX_PATH so that lookup cannot go to the host.
 
-Not read: watchman/cli beyond its two files, the sources of the daemon, the
-FBPythonBinary module, and CMakeLists.txt:417-447 beyond what is quoted above.
+Not read: watchman/cli beyond its two files, the sources of the daemon, and the
+bodies of the FBPythonBinary and FBThriftPythonLibrary modules (only their
+find_package and Python3_ lines were found by grep).
 EOT
 }
