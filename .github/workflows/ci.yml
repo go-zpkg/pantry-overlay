@@ -703,7 +703,7 @@ jobs:
       - name: no new recipe downloads from inside its build script
         run: >
           go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
-          --max-script-fetches 4
+          --max-script-fetches 1
 
       # ⛔⛔ A PIN WRITTEN ONCE, AN UPSTREAM THAT MOVES ON ITS OWN CLOCK. A
       # recipe with `sha256` is fail-closed: a consumer asking "*" gets the
