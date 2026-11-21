@@ -24,7 +24,10 @@ versions {
 distributable {
   # THE STORED RELEASE ASSET, not the generated tag archive: the release uploads
   # re2-<version>.zip, whose bytes do not change.
-  url              = "https://github.com/google/re2/releases/download/{{version.raw}}/re2-{{version.raw}}.zip"
+  #
+  # {{version.tag}} and not {{version.raw}}: `versions` normalises the date tag
+  # 2025-11-05 to 2025.11.05, and the asset is named with the tag.
+  url              = "https://github.com/google/re2/releases/download/{{version.tag}}/re2-{{version.tag}}.zip"
   strip-components = 1
 
   # Fetched with `zpkb sourcepin` (457594 bytes). The project publishes no
