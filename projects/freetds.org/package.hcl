@@ -21,12 +21,18 @@ summary = "FreeTDS: libraries and tools (tsql, freebcp, bsqldb) speaking TDS to 
 license = "LGPL-2.0-or-later"
 
 versions {
-  # Tags are `v1.5.22`. The repository also carries a release-candidate tag,
-  # `R1_6RC1`, whose asset is freetds-1.6rc1.tar.bz2: the `strip` only removes
-  # a leading `v`, so a tag that does not look like a version is for
-  # `zpkb versions` to refuse, and the resolved list is checked below.
+  # ⚠ The `releases` form reads the release NAME, not the tag (curl and
+  # nghttp2 strip "curl " and "nghttp2 v"). FreeTDS names them "FreeTDS 1.5.22
+  # minor release" and "FreeTDS 1.5 Release"; a first attempt that stripped a
+  # leading `v` (the TAG's shape) matched nothing: "no candidate version
+  # matched". The release candidate "FreeTDS 1.6 release candidate 1" (tag
+  # R1_6RC1) keeps its words after the strip and so is not a version.
   github = "FreeTDS/freetds/releases"
-  strip  = ["/^v/"]
+  strip = [
+    "/^FreeTDS /",
+    "/ minor release$/",
+    "/ Release$/",
+  ]
 }
 
 dependencies = {
@@ -42,7 +48,7 @@ distributable {
   # The stored release asset on GitHub. The project's own download area,
   # https://www.freetds.org/files/stable/freetds-1.5.22.tar.bz2, serves the
   # same bytes: fetched from both, the sha256 is identical.
-  url              = "https://github.com/FreeTDS/freetds/releases/download/v{{version.raw}}/freetds-{{version.raw}}.tar.bz2"
+  url              = "https://github.com/FreeTDS/freetds/releases/download/{{version.raw}}/freetds-{{version}}.tar.bz2"
   strip-components = 1
 
   # 3923670 bytes. Witnesses: (1) the sha256 of the GitHub asset and of the
