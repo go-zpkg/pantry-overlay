@@ -70,6 +70,20 @@ distributable {
   }
 }
 
+# ⛔ The bootstrap cargo 1.100.0, one archive per build platform (only the entry
+# for the target is fetched; a target none covers is refused). Each digest was
+# recorded with `zpkb sourcepin` against the detached signature
+# static.rust-lang.org/dist/<archive>.asc, made by the Rust release key (see
+# provenance), and each was confirmed by a second fetch with curl. The triple in
+# the URL is the one static.rust-lang.org names its archives by.
+sources = [
+  { url = "https://static.rust-lang.org/dist/cargo-1.100.0-x86_64-unknown-linux-gnu.tar.xz", sha256 = "7e29ce07d7c6e92d1826870575ba27d57fff6cb3e754aa57d99099cb88fab35d", dest = ".cargo-bootstrap", "strip-components" = 1, platforms = ["linux/x86-64"] },
+  { url = "https://static.rust-lang.org/dist/cargo-1.100.0-aarch64-unknown-linux-gnu.tar.xz", sha256 = "d07ee80eb6ba3c5845c554ac88086e1ff5d63f83d99c3c09cb32504cbedd6844", dest = ".cargo-bootstrap", "strip-components" = 1, platforms = ["linux/aarch64"] },
+  { url = "https://static.rust-lang.org/dist/cargo-1.100.0-s390x-unknown-linux-gnu.tar.xz", sha256 = "16aaeed1727094a29c9ab59fa851d62c57e698f71a7412a9d1b1209e0cd68fac", dest = ".cargo-bootstrap", "strip-components" = 1, platforms = ["linux/s390x"] },
+  { url = "https://static.rust-lang.org/dist/cargo-1.100.0-x86_64-apple-darwin.tar.xz", sha256 = "b597b59d15b19469b8ee19d2800217d8946511e4a8d930ff839bf7688b15a7c6", dest = ".cargo-bootstrap", "strip-components" = 1, platforms = ["darwin/x86-64"] },
+  { url = "https://static.rust-lang.org/dist/cargo-1.100.0-aarch64-apple-darwin.tar.xz", sha256 = "7e18265d2d2cda8dec6cac4d0faa3bbafe927b401e5185350abc7d669f9adafb", dest = ".cargo-bootstrap", "strip-components" = 1, platforms = ["darwin/aarch64"] },
+]
+
 # Cargo.toml:281-284: the one [[bin]], `cargo`. `cargo install --path .` installs
 # only that (the credential helpers and the other workspace members are separate
 # packages).
@@ -174,32 +188,13 @@ EOT
       run = <<EOT
 set -eu
 # ⛔ BOOTSTRAP. Cargo needs a cargo to build it (rust-lang.org/cargo cannot be
-# its own build dependency), so a published one is fetched: cargo 1.100.0, the
+# its own build dependency), so a published one is used: cargo 1.100.0, the
 # release this cargo belongs to (it must read this Cargo.toml and Cargo.lock,
-# which its own release does). {{hw.target}} renders the triples
-# static.rust-lang.org names its archives by. Each digest below was recorded
-# with `zpkb sourcepin` against the detached signature
-# static.rust-lang.org/dist/<archive>.asc, made by the Rust release key (see
-# provenance), and each was confirmed by a second fetch with curl.
-#
-# That Target.Triple is the triple of the machine zpkb RUNS on is right here only
-# because the factory builds each platform natively or under emulation.
-BT="{{hw.target}}"
-case "$BT" in
-  x86_64-unknown-linux-gnu)  SUM=7e29ce07d7c6e92d1826870575ba27d57fff6cb3e754aa57d99099cb88fab35d ;;
-  aarch64-unknown-linux-gnu) SUM=d07ee80eb6ba3c5845c554ac88086e1ff5d63f83d99c3c09cb32504cbedd6844 ;;
-  s390x-unknown-linux-gnu)   SUM=16aaeed1727094a29c9ab59fa851d62c57e698f71a7412a9d1b1209e0cd68fac ;;
-  x86_64-apple-darwin)       SUM=b597b59d15b19469b8ee19d2800217d8946511e4a8d930ff839bf7688b15a7c6 ;;
-  aarch64-apple-darwin)      SUM=7e18265d2d2cda8dec6cac4d0faa3bbafe927b401e5185350abc7d669f9adafb ;;
-  *) echo "no pinned bootstrap cargo for $BT" >&2; exit 1 ;;
-esac
-T="cargo-1.100.0-$BT.tar.xz"
-curl -fsSLo "$T" "https://static.rust-lang.org/dist/$T"
-if command -v sha256sum >/dev/null 2>&1; then echo "$SUM  $T" | sha256sum -c -
-else echo "$SUM  $T" | shasum -a 256 -c -; fi
-tar xJf "$T"
+# which its own release does). The archive for the build target is fetched and
+# unpacked into .cargo-bootstrap by the top-level `sources` (one entry per
+# platform; see there for how each digest was recorded).
 mkdir -p "$PWD/.bootstrap"
-mv "cargo-1.100.0-$BT/cargo/bin/cargo" "$PWD/.bootstrap/cargo"
+mv .cargo-bootstrap/cargo/bin/cargo "$PWD/.bootstrap/cargo"
 export PATH="$PWD/.bootstrap:$PATH"
 cargo --version
 cargo install --root={{ prefix }} --locked --path=.
