@@ -132,7 +132,7 @@ jobs:
       # `--render-scripts` 0, `--require-known-env` 0 — the six verdicts this
       # lane already gave under v0.92.0, 144 fragments under both.
       - name: every recipe can be read
-        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+        run: go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
 
       # ⛔⛔ AND EVERY RECIPE WILL EVENTUALLY HAVE TO STAND ALONE, WHICH IS A
       # DIFFERENT QUESTION FROM WHETHER IT PARSES. go-zpkg/recipes#50 reduced
@@ -508,10 +508,21 @@ jobs:
       # closure grows as recipes declare what they really need. They point the
       # same way, and only the second can be re-run.
       #
+      # ⭐ 2026-11-21, zpkb v0.96.0: THE NUMBER IS GONE, THE LIST REPLACES IT.
+      # `--max-fragments N` had to equal the count exactly, so every PR that
+      # completed a recipe edited this one line, and about eighteen of them
+      # conflicted on it every minute (recipes#243 lost six rounds in a row,
+      # the ceiling moving 139 → 121 under it). `--fragments-dir .fragments`
+      # states the same obligation as a SET: one empty file per fragment at
+      # .fragments/<recipe path>. A PR that completes a recipe DELETES its own
+      # marker; a PR that adds a fragment adds one. Distinct files never
+      # conflict. Both directions are refused by name: a fragment with no marker
+      # is a regression, a marker for a recipe that stands alone says "delete
+      # this marker". The markers were generated from lint's own list.
       - name: no recipe becomes a fragment that was not one already
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
-          --require-standalone --max-fragments 78
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
+          --require-standalone --fragments-dir .fragments
 
       # ⭐ THIS STEP WAS A COMMENT UNTIL go-zpkg/zpkb#476, and the comment said
       # why: "--require-provenance is NOT here yet. 14 of 216 record none, and
@@ -588,7 +599,7 @@ jobs:
       # with no number to adjust and no slack to hide in.
       - name: no recipe lands without saying which files its build came from
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --require-provenance
 
       # ⛔ HCL ONLY, AND THIS ONE HAS NO CEILING BECAUSE IT DOES NOT NEED ONE.
@@ -612,7 +623,7 @@ jobs:
       # with an unread yaml next to it (go-zpkg/zpkb#477).
       - name: our own recipes are HCL, and nothing may add a yaml back
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --require-hcl
 
       # ⛔⛔ A RECIPE CAN PARSE AND STILL DESCRIBE NO STEP, and this tree proved
@@ -637,7 +648,7 @@ jobs:
       # 1 refusal at 760df17, 0 after the repair. One instance, so no ceiling.
       - name: every script a recipe states can actually be rendered
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --render-scripts
 
       # ⛔⛔ FOUR RECIPES OF THIS TREE SHIPPED READING A BUILD VARIABLE THE
@@ -674,7 +685,7 @@ jobs:
       # once #138 fixed it. One instance, so no ceiling.
       - name: no recipe reads a build variable the builder does not export
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --require-known-env
 
       # ⛔⛔ A BUILD SCRIPT THAT DOWNLOADS SHIPS WHATEVER THE HOST SERVED. A
@@ -691,7 +702,7 @@ jobs:
       # `sources` entry (extract = false for a plain file), then this drops.
       - name: no new recipe downloads from inside its build script
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --max-script-fetches 4
 
       # ⛔⛔ A PIN WRITTEN ONCE, AN UPSTREAM THAT MOVES ON ITS OWN CLOCK. A
@@ -725,7 +736,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >
-          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.94.0 lint --dir .
+          go run github.com/go-zpkg/zpkb/cmd/zpkb@v0.96.0 lint --dir .
           --check-newest-pinned
 
       # ⛔⛔ THIS REPOSITORY CALLED ITSELF `pantry-overlay` FOR A DAY AFTER IT WAS
