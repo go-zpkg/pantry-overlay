@@ -1,0 +1,10 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -764,7 +764,6 @@
+
+ install(TARGETS watchman RUNTIME DESTINATION bin)
+
+-add_subdirectory(watchman/cli)
+
+ set(tests)
+ # Helper function to define a unit test executable
